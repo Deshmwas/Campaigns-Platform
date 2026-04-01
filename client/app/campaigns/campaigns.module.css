@@ -1,0 +1,232 @@
+.container {
+    max-width: 1400px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-xl);
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    margin-bottom: var(--spacing-xs);
+}
+
+.subtitle {
+    color: var(--color-gray-600);
+}
+
+.filters {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+}
+
+.filterButton {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border: 2px solid var(--color-gray-300);
+    background-color: var(--color-white);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.filterButton:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.filterButton.active {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-white);
+}
+
+/* Table Layout */
+.tableContainer {
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-gray-200);
+    overflow: hidden;
+}
+.tableWrapper {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th {
+    text-align: left;
+    padding: var(--spacing-md) var(--spacing-md);
+    border-bottom: 2px solid var(--color-gray-200);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-gray-600);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.table td {
+    padding: var(--spacing-md) var(--spacing-md);
+    border-bottom: 1px solid var(--color-gray-100);
+    font-size: 0.9rem;
+    color: var(--color-gray-700);
+}
+
+.tableRow {
+    transition: background-color 0.15s;
+}
+
+.tableRow:hover {
+    background-color: var(--color-gray-50);
+}
+
+.nameCell {
+    font-weight: 600;
+    color: var(--color-gray-900);
+    max-width: 250px;
+}
+
+.campaignLink {
+    cursor: pointer;
+    color: var(--color-gray-900);
+    transition: color 0.2s;
+}
+
+.campaignLink:hover {
+    color: var(--color-primary);
+}
+
+.dateCell {
+    white-space: nowrap;
+    color: var(--color-gray-500);
+    font-size: 0.85rem;
+}
+
+/* Type Badge */
+.typeBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.typeBadge.email {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.typeBadge.sms {
+    background-color: rgba(22, 163, 74, 0.1);
+    color: var(--color-accent);
+}
+
+/* Status Badge */
+.statusBadge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.statusDraft {
+    background-color: var(--color-gray-200);
+    color: var(--color-gray-700);
+}
+
+.statusScheduled {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+
+.statusSending {
+    background-color: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+}
+
+.statusSent {
+    background-color: rgba(22, 163, 74, 0.2);
+    color: var(--color-accent);
+}
+
+.statusFailed {
+    background-color: rgba(220, 38, 38, 0.2);
+    color: #dc2626;
+}
+
+.statusPaused {
+    background-color: rgba(107, 114, 128, 0.2);
+    color: #6b7280;
+}
+
+/* Action Buttons */
+.actions {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.actionBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--color-gray-200);
+    background: var(--color-white);
+    border-radius: var(--radius-md);
+    color: var(--color-gray-500);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1rem;
+}
+
+.actionBtn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background-color: rgba(220, 38, 38, 0.05);
+}
+
+.sendBtn:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    background-color: rgba(22, 163, 74, 0.05);
+}
+
+.deleteBtn:hover {
+    border-color: #dc2626;
+    color: #dc2626;
+    background-color: rgba(220, 38, 38, 0.05);
+}
+
+.loading,
+.empty {
+    text-align: center;
+    padding: var(--spacing-2xl);
+    color: var(--color-gray-600);
+}
+
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-lg);
+}

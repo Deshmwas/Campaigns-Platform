@@ -1,0 +1,411 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--color-gray-900);
+    margin-bottom: var(--spacing-xs);
+}
+
+.subtitle {
+    font-size: 1rem;
+    color: var(--color-gray-500);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: var(--spacing-xl);
+    align-items: start;
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--color-gray-600);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+.tab:hover {
+    background-color: var(--color-gray-100);
+    color: var(--color-gray-900);
+}
+
+.tab.active {
+    background-color: rgba(220, 38, 38, 0.05);
+    color: var(--color-primary);
+}
+
+.tabIcon {
+    font-size: 1.25rem;
+}
+
+.content {
+    min-height: 400px;
+}
+
+.formGrid {
+    display: grid;
+    gap: var(--spacing-lg);
+    max-width: 600px;
+}
+
+.infoBox {
+    padding: var(--spacing-lg);
+    background-color: var(--color-gray-100);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-gray-200);
+}
+
+.infoBox h3 {
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    color: var(--color-gray-500);
+    margin-bottom: var(--spacing-sm);
+}
+
+.infoBox code {
+    display: block;
+    font-family: monospace;
+    font-size: 1.1rem;
+    background: var(--color-white);
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-gray-300);
+    margin-bottom: var(--spacing-sm);
+}
+
+.infoBox p {
+    font-size: 0.875rem;
+    color: var(--color-gray-600);
+}
+
+/* ===================== Appearance Section ===================== */
+
+.appearanceSection {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+.sectionHeader {
+    margin-bottom: var(--spacing-sm);
+}
+
+.sectionHeader h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    margin-bottom: 4px;
+}
+
+.sectionHeader p {
+    font-size: 0.875rem;
+    color: var(--color-gray-500);
+}
+
+/* Preset Grid */
+.presetGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.presetCard {
+    background: white;
+    border: 2px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.presetCard:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.presetSwatches {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: var(--spacing-sm);
+}
+
+.presetSwatches span {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: block;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.presetName {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-gray-700);
+}
+
+/* Color Pickers */
+.colorPickerGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.colorPicker {
+    background: var(--color-gray-100);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    border: 1px solid var(--color-gray-200);
+}
+
+.colorPicker label {
+    display: block;
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: var(--color-gray-800);
+    margin-bottom: 2px;
+}
+
+.colorHint {
+    font-size: 0.75rem;
+    color: var(--color-gray-500);
+    margin-bottom: var(--spacing-md);
+}
+
+.pickerRow {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.colorInput {
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    padding: 0;
+    background: none;
+}
+
+.colorInput::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.colorInput::-webkit-color-swatch {
+    border: 2px solid rgba(0, 0, 0, 0.15);
+    border-radius: var(--radius-md);
+}
+
+.hexInput {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-md);
+    font-family: monospace;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    background: white;
+    color: var(--color-gray-800);
+    letter-spacing: 0.05em;
+}
+
+.hexInput:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* Live Preview */
+.livePreview {
+    display: flex;
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    height: 220px;
+    background: white;
+}
+
+.previewSidebar {
+    width: 140px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.75rem;
+}
+
+.previewLogo {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 800;
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+.previewNavItem {
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.previewContent {
+    flex: 1;
+    padding: 16px;
+    background: #f9fafb;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.previewHeader {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-gray-800);
+}
+
+.previewCards {
+    display: flex;
+    gap: 12px;
+}
+
+.previewCard {
+    flex: 1;
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 0.7rem;
+    color: var(--color-gray-500);
+    border-top: 3px solid;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.previewBtn {
+    align-self: flex-start;
+    padding: 6px 16px;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: default;
+}
+
+.previewBadge {
+    align-self: flex-start;
+    padding: 3px 10px;
+    border-radius: 999px;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.resetRow {
+    display: flex;
+    justify-content: flex-start;
+}
+
+/* ===================== Actions ===================== */
+.actions {
+    margin-top: var(--spacing-2xl);
+    padding-top: var(--spacing-xl);
+    border-top: 1px solid var(--color-gray-200);
+    display: flex;
+    justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: var(--spacing-md);
+    }
+
+    .tab {
+        white-space: nowrap;
+    }
+
+    .colorPickerGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .presetGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .livePreview {
+        height: auto;
+        flex-direction: column;
+    }
+
+    .previewSidebar {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+}
+
+.errorBanner {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+}
+
+.successBanner {
+    background: rgba(22, 163, 74, 0.12);
+    border: 1px solid rgba(22, 163, 74, 0.25);
+    color: #16a34a;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+}

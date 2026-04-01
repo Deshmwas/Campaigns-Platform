@@ -1,0 +1,216 @@
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-xl);
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    margin-bottom: var(--spacing-xs);
+}
+
+.subtitle {
+    color: var(--color-gray-600);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.templateCard {
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    transition: all 0.2s;
+}
+
+.templateCard:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: var(--color-gray-300);
+}
+
+.templateHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.templateIcon {
+    font-size: 1.5rem;
+    color: var(--color-accent);
+}
+
+.templateName {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+}
+
+.templateContent {
+    color: var(--color-gray-600);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: var(--spacing-md);
+    max-height: 4.5em;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.templateMeta {
+    display: flex;
+    gap: var(--spacing-md);
+    font-size: 0.8rem;
+    color: var(--color-gray-500);
+    margin-bottom: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--color-gray-100);
+}
+
+.templateActions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.actionBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 1px solid var(--color-gray-200);
+    background: var(--color-white);
+    border-radius: var(--radius-md);
+    font-size: 0.8rem;
+    color: var(--color-gray-600);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.actionBtn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.deleteBtn:hover {
+    border-color: #dc2626;
+    color: #dc2626;
+}
+
+.loading, .empty {
+    text-align: center;
+    padding: var(--spacing-2xl);
+    color: var(--color-gray-500);
+}
+
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.emptyIcon {
+    font-size: 3rem;
+    color: var(--color-gray-300);
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: var(--spacing-lg);
+}
+
+.modalContent {
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modalContent h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    margin-bottom: var(--spacing-lg);
+}
+
+.modalForm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-gray-700);
+}
+
+.textarea {
+    width: 100%;
+    padding: var(--spacing-md);
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.2s;
+}
+
+.textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.charInfo {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--color-gray-500);
+}
+
+.hint {
+    font-size: 0.8rem;
+    color: var(--color-gray-500);
+}
+
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}

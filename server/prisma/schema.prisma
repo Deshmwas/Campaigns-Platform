@@ -1,0 +1,387 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER & ORGANIZATION MANAGEMENT
+// ============================================
+
+model Organization {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  companyId   String?  @unique  // User-facing company identifier (e.g., ORG-A1B2C3)
+  settings    Json?    // JSON object for org-specific settings
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  contacts    Contact[]
+  contactLists ContactList[]
+  campaigns   Campaign[]
+  emailTemplates EmailTemplate[]
+  smsTemplates SmsTemplate[]
+  customFields CustomField[]
+  auditLogs   AuditLog[]
+  senderEmails SenderEmail[]
+
+  @@map("organizations")
+}
+
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  passwordHash   String
+  firstName      String
+  lastName       String
+  role           Role     @default(VIEWER)
+  organizationId String
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  auditLogs      AuditLog[]
+
+  @@index([organizationId])
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  VIEWER
+}
+
+// ============================================
+// CONTACTS & LISTS
+// ============================================
+
+model Contact {
+  id             String   @id @default(uuid())
+  organizationId String
+  email          String?
+  phone          String?
+  firstName      String?
+  lastName       String?
+  customData     Json?    // Dynamic fields stored as JSON
+  tags           String?  // Comma-separated tags
+  status         ContactStatus @default(ACTIVE)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  listMemberships ContactListMembership[]
+  campaignRecipients CampaignRecipient[]
+
+  @@index([organizationId])
+  @@index([email])
+  @@index([phone])
+  @@map("contacts")
+}
+
+enum ContactStatus {
+  ACTIVE
+  UNSUBSCRIBED
+  BOUNCED
+  BLACKLISTED
+}
+
+model ContactList {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  description    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  memberships    ContactListMembership[]
+
+  @@index([organizationId])
+  @@map("contact_lists")
+}
+
+model ContactListMembership {
+  id            String   @id @default(uuid())
+  contactId     String
+  listId        String
+  addedAt       DateTime @default(now())
+
+  contact       Contact      @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  list          ContactList  @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@unique([contactId, listId])
+  @@index([contactId])
+  @@index([listId])
+  @@map("contact_list_memberships")
+}
+
+model CustomField {
+  id             String   @id @default(uuid())
+  organizationId String
+  fieldName      String
+  fieldType      String   // text, number, date, boolean
+  createdAt      DateTime @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("custom_fields")
+}
+
+// ============================================
+// CAMPAIGNS
+// ============================================
+
+model Campaign {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  type           CampaignType
+  status         CampaignStatus @default(DRAFT)
+  subject        String?  // For email campaigns
+  content        String   @db.LongText // Email HTML or SMS text
+  templateId     String?  // Reference to template if used
+  senderEmailId  String?  // Reference to sender email account
+  scheduledAt    DateTime?
+  sentAt         DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  senderEmail    SenderEmail? @relation(fields: [senderEmailId], references: [id], onDelete: SetNull)
+  recipients     CampaignRecipient[]
+  stats          CampaignStats?
+
+  @@index([organizationId])
+  @@index([status])
+  @@map("campaigns")
+}
+
+enum CampaignType {
+  EMAIL
+  SMS
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  PAUSED
+  FAILED
+}
+
+model CampaignRecipient {
+  id          String   @id @default(uuid())
+  campaignId  String
+  contactId   String
+  status      RecipientStatus @default(PENDING)
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  openedAt    DateTime?
+  clickedAt   DateTime?
+  failedAt    DateTime?
+  errorMessage String?
+  createdAt   DateTime @default(now())
+
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  contact     Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  clicks      LinkClick[]
+
+  @@unique([campaignId, contactId])
+  @@index([campaignId])
+  @@index([contactId])
+  @@index([status])
+  @@map("campaign_recipients")
+}
+
+enum RecipientStatus {
+  PENDING
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  FAILED
+  UNSUBSCRIBED
+}
+
+model CampaignStats {
+  id              String   @id @default(uuid())
+  campaignId      String   @unique
+  totalRecipients Int      @default(0)
+  sentCount       Int      @default(0)
+  deliveredCount  Int      @default(0)
+  openedCount     Int      @default(0)
+  clickedCount    Int      @default(0)
+  failedCount     Int      @default(0)
+  unsubscribedCount Int    @default(0)
+  updatedAt       DateTime @updatedAt
+
+  campaign        Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("campaign_stats")
+}
+
+model LinkClick {
+  id          String   @id @default(uuid())
+  recipientId String
+  url         String
+  clickedAt   DateTime @default(now())
+
+  recipient   CampaignRecipient @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId])
+  @@map("link_clicks")
+}
+
+// ============================================
+// TEMPLATES
+// ============================================
+
+model EmailTemplate {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  subject        String
+  htmlContent    String   @db.LongText
+  textContent    String?  @db.Text
+  designJson     Json?    // Block-based template builder data
+  thumbnail      String?  // Preview image URL
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("email_templates")
+}
+
+model SmsTemplate {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  content        String   @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("sms_templates")
+}
+
+// ============================================
+// JOB QUEUE (Database-backed)
+// ============================================
+
+model JobQueue {
+  id          String   @id @default(uuid())
+  type        String   // 'email' or 'sms'
+  payload     Json
+  status      JobStatus @default(PENDING)
+  attempts    Int      @default(0)
+  maxAttempts Int      @default(3)
+  scheduledAt DateTime @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+  failedAt    DateTime?
+  error       String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  @@index([status, scheduledAt])
+  @@index([type])
+  @@map("job_queue")
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  RETRYING
+}
+
+// ============================================
+// SYSTEM & AUDIT
+// ============================================
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  organizationId String
+  userId         String?
+  action         String
+  entity         String
+  entityId       String?
+  changes        Json?
+  ipAddress      String?
+  createdAt      DateTime @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model Settings {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}
+
+// ============================================
+// SENDER EMAIL ACCOUNTS
+// ============================================
+
+model SenderEmail {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String   // Display name (e.g. "Marketing Team")
+  email          String   // Sender email address
+  smtpHost       String
+  smtpPort       Int      @default(587)
+  smtpUsername    String
+  smtpPassword   String   // Encrypted in application layer
+  encryption     String   @default("TLS") // TLS or SSL
+  isVerified     Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  campaigns      Campaign[]
+
+  @@index([organizationId])
+  @@map("sender_emails")
+}
+
+// ============================================
+// PASSWORD RESET (OTP)
+// ============================================
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  email     String
+  otp       String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([otp])
+  @@map("password_reset_tokens")
+}

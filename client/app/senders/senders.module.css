@@ -1,0 +1,96 @@
+.container { max-width: 1200px; margin: 0 auto; animation: fadeInUp 0.5s ease-out; }
+.header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--spacing-xl); }
+.title { font-size: 2rem; font-weight: 800; color: var(--color-gray-900); }
+.subtitle { color: var(--color-gray-500); margin-top: 4px; }
+.loading { padding: 3rem; text-align: center; color: var(--color-gray-500); }
+.empty { padding: 4rem 2rem; text-align: center; }
+.emptyIcon { font-size: 3rem; color: var(--color-gray-300); margin-bottom: var(--spacing-md); }
+.empty h3 { font-size: 1.2rem; color: var(--color-gray-700); margin-bottom: 4px; }
+.empty p { color: var(--color-gray-500); margin-bottom: var(--spacing-lg); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: var(--spacing-lg); }
+
+.senderCard {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    border: 1px solid var(--color-gray-200);
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+}
+.senderCard:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+
+.senderHeader { display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-md); }
+.senderIcon {
+    width: 44px; height: 44px; border-radius: var(--radius-lg);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 1.25rem;
+}
+.senderInfo { flex: 1; min-width: 0; }
+.senderInfo h3 { font-size: 1rem; font-weight: 700; color: var(--color-gray-900); }
+.senderInfo p { font-size: 0.8rem; color: var(--color-gray-500); overflow: hidden; text-overflow: ellipsis; }
+
+.badge {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 0.7rem; font-weight: 600; padding: 4px 10px;
+    border-radius: var(--radius-full);
+}
+.verified { background: rgba(22,163,74,0.1); color: var(--color-accent); }
+.unverified { background: rgba(156,163,175,0.15); color: var(--color-gray-500); }
+
+.senderDetails {
+    display: flex; gap: var(--spacing-md); flex-wrap: wrap;
+    font-size: 0.8rem; color: var(--color-gray-500);
+    padding: var(--spacing-sm) 0;
+    border-top: 1px solid var(--color-gray-100);
+    border-bottom: 1px solid var(--color-gray-100);
+    margin-bottom: var(--spacing-md);
+}
+
+.testResult {
+    padding: 8px 12px; border-radius: var(--radius-md);
+    font-size: 0.8rem; margin-bottom: var(--spacing-sm);
+}
+.testSuccess { background: rgba(22,163,74,0.1); color: var(--color-accent); }
+.testFail { background: rgba(239,68,68,0.1); color: var(--color-primary); }
+
+.senderActions { display: flex; gap: var(--spacing-sm); }
+.actionBtn {
+    display: flex; align-items: center; gap: 4px;
+    padding: 6px 12px; border-radius: var(--radius-md);
+    border: 1px solid var(--color-gray-200);
+    background: white; color: var(--color-gray-600);
+    font-size: 0.8rem; font-weight: 500; cursor: pointer;
+    transition: all 0.2s;
+}
+.actionBtn:hover { background: var(--color-gray-50); color: var(--color-gray-900); }
+.deleteBtn:hover { background: rgba(239,68,68,0.05); color: var(--color-primary); border-color: rgba(239,68,68,0.3); }
+
+/* Modal */
+.modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; backdrop-filter: blur(4px); padding: var(--spacing-lg);
+}
+.modalContent {
+    background: white; border-radius: var(--radius-xl);
+    padding: var(--spacing-2xl); width: 100%; max-width: 600px;
+    max-height: 90vh; overflow-y: auto;
+    animation: fadeInUp 0.3s ease;
+}
+.modalContent h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: var(--spacing-lg); }
+.modalForm { display: flex; flex-direction: column; gap: var(--spacing-md); }
+.formRow { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); }
+.selectGroup { display: flex; flex-direction: column; gap: 6px; }
+.selectGroup label { font-size: 0.875rem; font-weight: 500; color: var(--color-gray-700); }
+.selectGroup select {
+    padding: 10px 12px; border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-md); font-size: 0.875rem;
+    background: white;
+}
+.modalActions { display: flex; justify-content: flex-end; gap: var(--spacing-sm); margin-top: var(--spacing-md); }
+
+@media (max-width: 768px) {
+    .grid { grid-template-columns: 1fr; }
+    .formRow { grid-template-columns: 1fr; }
+}

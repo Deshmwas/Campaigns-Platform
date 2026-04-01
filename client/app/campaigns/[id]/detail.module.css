@@ -1,0 +1,236 @@
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.backBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    background: none;
+    border: none;
+    color: var(--color-gray-600);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-sm) 0;
+    transition: color 0.2s;
+}
+
+.backBtn:hover {
+    color: var(--color-primary);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-xl);
+}
+
+.titleRow {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+}
+
+.subject {
+    color: var(--color-gray-600);
+    font-size: 1rem;
+    margin-bottom: var(--spacing-xs);
+}
+
+.date {
+    color: var(--color-gray-500);
+    font-size: 0.875rem;
+}
+
+.typeBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.typeBadge.email {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.typeBadge.sms {
+    background-color: rgba(22, 163, 74, 0.1);
+    color: var(--color-accent);
+}
+
+.statusBadge {
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.statusDRAFT { background-color: var(--color-gray-200); color: var(--color-gray-700); }
+.statusSCHEDULED { background-color: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+.statusSENDING { background-color: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+.statusSENT { background-color: rgba(22, 163, 74, 0.2); color: var(--color-accent); }
+.statusFAILED { background-color: rgba(220, 38, 38, 0.2); color: #dc2626; }
+.statusPAUSED { background-color: rgba(107, 114, 128, 0.2); color: #6b7280; }
+
+.actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+}
+
+.statCard {
+    background: var(--color-white);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-gray-200);
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.statCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.statValue {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+}
+
+.statValue.blue { color: #3b82f6; }
+.statValue.green { color: #16a34a; }
+.statValue.teal { color: #0d9488; }
+.statValue.amber { color: #f59e0b; }
+.statValue.red { color: #dc2626; }
+
+.statLabel {
+    font-size: 0.8rem;
+    color: var(--color-gray-500);
+    margin-top: var(--spacing-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.previewFrame {
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.iframe {
+    width: 100%;
+    height: 500px;
+    border: none;
+}
+
+.smsPreview {
+    padding: var(--spacing-lg);
+    background: var(--color-gray-50);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.charCount {
+    display: block;
+    margin-top: var(--spacing-md);
+    font-size: 0.8rem;
+    color: var(--color-gray-500);
+}
+
+.tableWrapper {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th {
+    text-align: left;
+    padding: var(--spacing-md);
+    border-bottom: 2px solid var(--color-gray-200);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-gray-600);
+    font-weight: 600;
+}
+
+.table td {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--color-gray-100);
+    font-size: 0.9rem;
+    color: var(--color-gray-700);
+}
+
+.table tbody tr:hover {
+    background-color: var(--color-gray-50);
+}
+
+.recipientStatus {
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-full);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.rsPENDING { background-color: var(--color-gray-200); color: var(--color-gray-700); }
+.rsSENT { background-color: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+.rsDELIVERED { background-color: rgba(22, 163, 74, 0.15); color: #16a34a; }
+.rsOPENED { background-color: rgba(14, 165, 233, 0.15); color: #0ea5e9; }
+.rsCLICKED { background-color: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.rsFAILED { background-color: rgba(220, 38, 38, 0.15); color: #dc2626; }
+.rsUNSUBSCRIBED { background-color: rgba(107, 114, 128, 0.15); color: #6b7280; }
+
+.errorCell {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    color: var(--color-gray-500);
+}
+
+.loading, .empty {
+    text-align: center;
+    padding: var(--spacing-2xl);
+    color: var(--color-gray-500);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
