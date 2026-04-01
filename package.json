@@ -14,7 +14,7 @@
     "build:server": "npm run build --workspace=server",
     "build:client": "npm run build --workspace=client",
     "build": "npm-run-all build:server build:client",
-    "postinstall": "npm run prisma:generate --workspace=server"
+    "postinstall": "node scripts/postinstall.js"
   },
   "devDependencies": {
     "npm-run-all": "^4.1.5"
