@@ -1,7 +1,7 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/Button';
@@ -10,7 +10,7 @@ import styles from '../login/auth.module.css';
 import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { useBranding } from '../../lib/useBranding';
 
-export default function RegisterPage() {
+function RegisterContent() {
     const { register } = useAuth();
     const { name: brandName, logoUrl, initials } = useBranding();
     const [formData, setFormData] = useState({
@@ -201,5 +201,13 @@ export default function RegisterPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function RegisterPage() {
+    return (
+        <Suspense fallback={<div className={styles.container} />}>
+            <RegisterContent />
+        </Suspense>
     );
 }

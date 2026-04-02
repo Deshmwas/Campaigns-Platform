@@ -1,7 +1,7 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/Button';
@@ -11,7 +11,7 @@ import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { useBranding } from '../../lib/useBranding';
 import api from '../../lib/api';
 
-export default function LoginPage() {
+function LoginContent() {
     const { login } = useAuth();
     const { name: brandName, logoUrl, initials } = useBranding();
     const [email, setEmail] = useState('');
@@ -113,5 +113,13 @@ export default function LoginPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<div className={styles.container} />}>
+            <LoginContent />
+        </Suspense>
     );
 }

@@ -1,7 +1,7 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import api from '../../lib/api';
 import Button from '../../components/Button';
@@ -9,7 +9,7 @@ import Input from '../../components/Input';
 import styles from '../login/auth.module.css';
 import { useBranding } from '../../lib/useBranding';
 
-export default function ForgotPasswordPage() {
+function ForgotPasswordContent() {
     const { name: brandName, logoUrl, initials } = useBranding();
     const [step, setStep] = useState(1); // 1: email, 2: otp, 3: new password
     const [email, setEmail] = useState('');
@@ -118,5 +118,13 @@ export default function ForgotPasswordPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function ForgotPasswordPage() {
+    return (
+        <Suspense fallback={<div className={styles.container} />}>
+            <ForgotPasswordContent />
+        </Suspense>
     );
 }
