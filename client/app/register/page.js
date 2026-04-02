@@ -9,6 +9,7 @@ import Input from '../../components/Input';
 import styles from '../login/auth.module.css';
 import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { useBranding } from '../../lib/useBranding';
+import api from '../../lib/api';
 
 function RegisterContent() {
     const { register } = useAuth();
@@ -75,7 +76,7 @@ function RegisterContent() {
             </div>
             <div className={styles.brandCorner}>
                 <div className={styles.brandMark}>
-                    {logoUrl ? <img src={logoUrl} alt={`${brandName} logo`} /> : <span>{initials}</span>}
+                    {logoUrl ? <img src={api.ensureAbsoluteUrl(logoUrl)} alt={`${brandName} logo`} /> : <span>{initials}</span>}
                 </div>
                 <div className={styles.brandText}>
                     <strong>{brandName}</strong>
@@ -85,7 +86,7 @@ function RegisterContent() {
             <div className={styles.card}>
                 <div className={styles.header}>
                     <div className={styles.logo}>
-                        {logoUrl ? <img src={logoUrl} alt={`${brandName} logo`} /> : initials}
+                        {logoUrl ? <img src={api.ensureAbsoluteUrl(logoUrl)} alt={`${brandName} logo`} /> : initials}
                     </div>
                     <h1 className={styles.title}>Get Started</h1>
                     <p className={styles.subtitle}>Create your organization account</p>

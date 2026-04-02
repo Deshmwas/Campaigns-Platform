@@ -24,20 +24,18 @@ export const getPublicBranding = async (req, res, next) => {
         }
 
         if (!org) {
-            // Prefer orgs that already have a logo set, fallback to newest org
-            // MySQL JSON path must start with "$."
-            org = await prisma.organization.findFirst({
-                where: { settings: { path: '$.logoUrl', not: null } },
+            // Find an organization that has a logo, or just the most recent one
+            const orgs = await prisma.organization.findMany({
                 orderBy: [
                     { updatedAt: 'desc' },
                     { createdAt: 'desc' }
-                ]
-            }) || await prisma.organization.findFirst({
-                orderBy: [
-                    { updatedAt: 'desc' },
-                    { createdAt: 'desc' }
-                ]
+                ],
+                take: 10 // Only check recent ones for performance
             });
+            org = orgs.find(o => {
+                const s = o.settings;
+                return s && typeof s === 'object' && !Array.isArray(s) && s.logoUrl;
+            }) || orgs[0];
         }
 
         if (!org) {

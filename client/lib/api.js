@@ -25,7 +25,9 @@ class ApiClient {
     }
 
     async request(endpoint, options = {}) {
-        const url = `${this.baseUrl}${endpoint}`;
+        const base = this.baseUrl.endsWith('/') ? this.baseUrl.slice(0, -1) : this.baseUrl;
+        const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+        const url = `${base}${cleanEndpoint}`;
         const token = this.getToken();
 
         const config = {
@@ -41,19 +43,31 @@ class ApiClient {
             config.body = JSON.stringify(options.body);
         }
 
-        const response = await fetch(url, config);
+        try {
+            const response = await fetch(url, config);
 
-        if (response.status === 204) {
-            return null;
+            if (response.status === 204) {
+                return null;
+            }
+
+            let data;
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                const text = await response.text();
+                data = { error: text || 'Unknown error occurred' };
+            }
+
+            if (!response.ok) {
+                throw new Error(data.error || `Request failed with status ${response.status}`);
+            }
+
+            return data;
+        } catch (error) {
+            console.error(`API Request Error [${url}]:`, error.message);
+            throw error;
         }
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || 'Request failed');
-        }
-
-        return data;
     }
 
     // Auth

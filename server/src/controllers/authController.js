@@ -6,7 +6,9 @@ import EmailEngine from '../services/EmailEngine.js';
 
 const mapOrg = (org) => {
     if (!org) return null;
-    const settings = org.settings || {};
+    const settings = (org.settings && typeof org.settings === 'object' && !Array.isArray(org.settings)) 
+        ? org.settings 
+        : {};
     const logoUrl = settings.logoUrl
         ? (settings.logoUrl.startsWith('http') ? settings.logoUrl : `${config.app.apiUrl}${settings.logoUrl}`)
         : null;
@@ -22,6 +24,10 @@ const mapOrg = (org) => {
 export const register = async (req, res, next) => {
     try {
         const { email, password, firstName, lastName, organizationName } = req.body;
+
+        if (!email || !password || !organizationName) {
+            return res.status(400).json({ error: 'Email, password, and organization name are required' });
+        }
 
         // Check if user exists
         const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -43,8 +49,8 @@ export const register = async (req, res, next) => {
                     create: {
                         email,
                         passwordHash,
-                        firstName,
-                        lastName,
+                        firstName: firstName || '',
+                        lastName: lastName || '',
                         role: 'ADMIN',
                     },
                 },
