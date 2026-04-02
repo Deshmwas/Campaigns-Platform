@@ -6,13 +6,9 @@
     "type": "module",
     "scripts": {
     "dev": "nodemon src/index.js",
-    "start": "node src/index.js",
+    "start": "prisma generate && prisma db push --accept-data-loss && node src/index.js",
     "postinstall": "prisma generate",
-    "prisma:generate": "prisma generate",
-        "prisma:migrate": "prisma migrate dev",
-        "prisma:studio": "prisma studio",
-        "db:seed": "node src/scripts/seed.js",
-        "test": "set NODE_OPTIONS=--experimental-vm-modules && jest"
+    "prisma:generate": "prisma generate"
     },
     "dependencies": {
     "@prisma/client": "^5.7.1",
