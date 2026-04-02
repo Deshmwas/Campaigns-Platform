@@ -1,20 +1,53 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import Card from '../../../components/Card';
 import Button from '../../../components/Button';
 import api from '../../../lib/api';
 import styles from './templates.module.css';
-import { MdAdd, MdEdit, MdDelete, MdContentCopy, MdEmail } from 'react-icons/md';
+import { MdAdd, MdEdit, MdDelete, MdContentCopy, MdEmail, MdCheckCircle, MdError, MdClose } from 'react-icons/md';
 import ConfirmModal from '../../../components/ConfirmModal';
+
+function Toast({ message, type, onDismiss }) {
+    useEffect(() => {
+        const timer = setTimeout(onDismiss, 5000);
+        return () => clearTimeout(timer);
+    }, [onDismiss]);
+
+    const isError = type === 'error';
+    return (
+        <div style={{
+            position: 'fixed', top: '20px', right: '20px', zIndex: 9999,
+            background: isError ? '#fef2f2' : '#f0fdf4',
+            border: `1px solid ${isError ? '#fecaca' : '#bbf7d0'}`,
+            color: isError ? '#dc2626' : '#16a34a',
+            padding: '12px 16px', borderRadius: '10px', minWidth: '280px',
+            fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '10px',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+            animation: 'slideIn 0.25s ease-out',
+        }}>
+            {isError ? <MdError size={20} /> : <MdCheckCircle size={20} />}
+            <span style={{ flex: 1 }}>{message}</span>
+            <button onClick={onDismiss} style={{
+                background: 'none', border: 'none', color: 'inherit', cursor: 'pointer',
+                padding: '2px', display: 'flex', opacity: 0.6,
+            }}><MdClose size={16} /></button>
+        </div>
+    );
+}
 
 export default function EmailTemplatesPage() {
     const router = useRouter();
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [confirmState, setConfirmState] = useState({ isOpen: false, payload: null });
+    const [toast, setToast] = useState(null);
+
+    const showToast = useCallback((message, type = 'success') => {
+        setToast({ message, type, id: Date.now() });
+    }, []);
 
     useEffect(() => { loadTemplates(); }, []);
 
@@ -22,7 +55,10 @@ export default function EmailTemplatesPage() {
         try {
             const data = await api.getEmailTemplates();
             setTemplates(data || []);
-        } catch (error) { console.error('Failed to load templates:', error); }
+        } catch (error) {
+            console.error('Failed to load templates:', error);
+            showToast('Failed to load templates. Please refresh the page.', 'error');
+        }
         finally { setLoading(false); }
     };
 
@@ -35,15 +71,21 @@ export default function EmailTemplatesPage() {
         setConfirmState({ isOpen: false, payload: null });
         try { 
             await api.deleteEmailTemplate(id); 
+            showToast('Template deleted successfully.');
             loadTemplates(); 
-        } catch (err) { alert(err.message); }
+        } catch (err) {
+            showToast(err.message || 'Failed to delete template.', 'error');
+        }
     };
 
     const handleDuplicate = async (id) => {
         try {
             await api.duplicateEmailTemplate(id);
+            showToast('Template duplicated successfully.');
             loadTemplates();
-        } catch (err) { alert(err.message); }
+        } catch (err) {
+            showToast(err.message || 'Failed to duplicate template.', 'error');
+        }
     };
 
     return (
@@ -73,7 +115,6 @@ export default function EmailTemplatesPage() {
                             {templates.map((template) => (
                                 <div key={template.id} className={styles.card}>
                                     <div className={styles.thumbnail}>
-                                        {/* A simple representation since we don't have images */}
                                         <div className={styles.thumbnailPlaceholder}>
                                             <MdEmail />
                                         </div>
@@ -114,6 +155,15 @@ export default function EmailTemplatesPage() {
                     onConfirm={handleConfirmDelete}
                     onCancel={() => setConfirmState({ isOpen: false, payload: null })}
                 />
+
+                {toast && (
+                    <Toast 
+                        key={toast.id}
+                        message={toast.message} 
+                        type={toast.type} 
+                        onDismiss={() => setToast(null)} 
+                    />
+                )}
             </div>
         </DashboardLayout>
     );

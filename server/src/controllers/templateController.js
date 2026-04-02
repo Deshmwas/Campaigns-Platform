@@ -27,10 +27,21 @@ export const getEmailTemplate = async (req, res, next) => {
 export const createEmailTemplate = async (req, res, next) => {
     try {
         const { name, subject, htmlContent, textContent, designJson } = req.body;
+
+        if (!name || !name.trim()) {
+            return res.status(400).json({ error: 'Template name is required' });
+        }
+        if (!htmlContent && (!designJson || !Array.isArray(designJson))) {
+            return res.status(400).json({ error: 'Template content is required' });
+        }
+
         const template = await prisma.emailTemplate.create({
             data: {
                 organizationId: req.organizationId,
-                name, subject, htmlContent, textContent,
+                name: name.trim(),
+                subject: subject || name.trim(),
+                htmlContent: htmlContent || '',
+                textContent: textContent || undefined,
                 designJson: designJson || undefined,
             },
         });
@@ -44,11 +55,22 @@ export const updateEmailTemplate = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { name, subject, htmlContent, textContent, designJson } = req.body;
-        const template = await prisma.emailTemplate.update({
+
+        // Verify the template exists and belongs to this org
+        const existing = await prisma.emailTemplate.findFirst({
             where: { id, organizationId: req.organizationId },
+        });
+        if (!existing) {
+            return res.status(404).json({ error: 'Template not found' });
+        }
+
+        const template = await prisma.emailTemplate.update({
+            where: { id },
             data: {
-                ...(name && { name }), ...(subject && { subject }),
-                ...(htmlContent && { htmlContent }), ...(textContent !== undefined && { textContent }),
+                ...(name && { name: name.trim() }),
+                ...(subject && { subject }),
+                ...(htmlContent && { htmlContent }),
+                ...(textContent !== undefined && { textContent }),
                 ...(designJson !== undefined && { designJson }),
             },
         });
@@ -84,9 +106,16 @@ export const duplicateEmailTemplate = async (req, res, next) => {
 export const deleteEmailTemplate = async (req, res, next) => {
     try {
         const { id } = req.params;
-        await prisma.emailTemplate.delete({
+
+        // Verify ownership before deleting
+        const existing = await prisma.emailTemplate.findFirst({
             where: { id, organizationId: req.organizationId },
         });
+        if (!existing) {
+            return res.status(404).json({ error: 'Template not found' });
+        }
+
+        await prisma.emailTemplate.delete({ where: { id } });
         res.status(204).send();
     } catch (error) {
         next(error);
@@ -100,7 +129,6 @@ export const getSmsTemplates = async (req, res, next) => {
             where: { organizationId: req.organizationId },
             orderBy: { createdAt: 'desc' },
         });
-
         res.json(templates);
     } catch (error) {
         next(error);
@@ -123,14 +151,20 @@ export const createSmsTemplate = async (req, res, next) => {
     try {
         const { name, content } = req.body;
 
+        if (!name || !name.trim()) {
+            return res.status(400).json({ error: 'Template name is required' });
+        }
+        if (!content || !content.trim()) {
+            return res.status(400).json({ error: 'Template content is required' });
+        }
+
         const template = await prisma.smsTemplate.create({
             data: {
                 organizationId: req.organizationId,
-                name,
-                content,
+                name: name.trim(),
+                content: content.trim(),
             },
         });
-
         res.status(201).json(template);
     } catch (error) {
         next(error);
@@ -142,14 +176,20 @@ export const updateSmsTemplate = async (req, res, next) => {
         const { id } = req.params;
         const { name, content } = req.body;
 
-        const template = await prisma.smsTemplate.update({
-            where: {
-                id,
-                organizationId: req.organizationId,
-            },
-            data: { name, content },
+        const existing = await prisma.smsTemplate.findFirst({
+            where: { id, organizationId: req.organizationId },
         });
+        if (!existing) {
+            return res.status(404).json({ error: 'Template not found' });
+        }
 
+        const template = await prisma.smsTemplate.update({
+            where: { id },
+            data: {
+                ...(name && { name: name.trim() }),
+                ...(content && { content: content.trim() }),
+            },
+        });
         res.json(template);
     } catch (error) {
         next(error);
@@ -160,13 +200,14 @@ export const deleteSmsTemplate = async (req, res, next) => {
     try {
         const { id } = req.params;
 
-        await prisma.smsTemplate.delete({
-            where: {
-                id,
-                organizationId: req.organizationId,
-            },
+        const existing = await prisma.smsTemplate.findFirst({
+            where: { id, organizationId: req.organizationId },
         });
+        if (!existing) {
+            return res.status(404).json({ error: 'Template not found' });
+        }
 
+        await prisma.smsTemplate.delete({ where: { id } });
         res.status(204).send();
     } catch (error) {
         next(error);

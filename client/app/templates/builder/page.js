@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useCallback, useEffect, Suspense } from 'react';
+import { useState, useCallback, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import Button from '../../../components/Button';
 import api from '../../../lib/api';
 import styles from './builder.module.css';
-import { MdTextFields, MdImage, MdSmartButton, MdHorizontalRule, MdTitle, MdShare, MdSave, MdPreview, MdDelete, MdArrowUpward, MdArrowDownward, MdContentCopy, MdArrowBack, MdAdd, MdClose } from 'react-icons/md';
+import { MdTextFields, MdImage, MdSmartButton, MdHorizontalRule, MdTitle, MdShare, MdSave, MdPreview, MdDelete, MdArrowUpward, MdArrowDownward, MdContentCopy, MdArrowBack, MdAdd, MdClose, MdCheckCircle, MdError, MdCloudUpload } from 'react-icons/md';
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaYoutube, FaTiktok } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 
@@ -102,6 +102,37 @@ function generateHTML(blocks) {
     return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Email</title></head><body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,sans-serif"><div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.05)">${body}</div></body></html>`;
 }
 
+// ─── Toast Notification Component ───────────────────────────────────
+function Toast({ message, type, onDismiss }) {
+    useEffect(() => {
+        const timer = setTimeout(onDismiss, 5000);
+        return () => clearTimeout(timer);
+    }, [onDismiss]);
+
+    const isError = type === 'error';
+    const bgColor = isError ? 'rgba(239,68,68,0.1)' : 'rgba(22,163,74,0.12)';
+    const borderColor = isError ? 'rgba(239,68,68,0.25)' : 'rgba(22,163,74,0.25)';
+    const textColor = isError ? '#ef4444' : '#16a34a';
+    const Icon = isError ? MdError : MdCheckCircle;
+
+    return (
+        <div style={{
+            background: bgColor, border: `1px solid ${borderColor}`, color: textColor,
+            padding: '10px 14px', borderRadius: '8px', marginBottom: '0.5rem',
+            fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '8px',
+            animation: 'fadeIn 0.2s ease-out',
+        }}>
+            <Icon size={18} style={{ flexShrink: 0 }} />
+            <span style={{ flex: 1 }}>{message}</span>
+            <button onClick={onDismiss} style={{
+                background: 'none', border: 'none', color: textColor, cursor: 'pointer',
+                padding: '2px', display: 'flex', opacity: 0.7,
+            }}><MdClose size={16} /></button>
+        </div>
+    );
+}
+
+// ─── Main Builder ───────────────────────────────────────────────────
 function BuilderContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -114,8 +145,16 @@ function BuilderContent() {
     const [showPreview, setShowPreview] = useState(false);
     const [saving, setSaving] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [successMessage, setSuccessMessage] = useState('');
-    const [errorMessage, setErrorMessage] = useState('');
+    const [toasts, setToasts] = useState([]);
+
+    const addToast = useCallback((message, type = 'success') => {
+        const id = Date.now().toString() + Math.random().toString(36).substr(2, 5);
+        setToasts(prev => [...prev, { id, message, type }]);
+    }, []);
+
+    const removeToast = useCallback((id) => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+    }, []);
 
     useEffect(() => {
         if (templateId) {
@@ -128,13 +167,13 @@ function BuilderContent() {
                 setLoading(false);
             }).catch(err => {
                 console.error(err);
-                setErrorMessage('Failed to load template.');
+                addToast('Failed to load template. Please try again.', 'error');
                 setLoading(false);
             });
         } else {
             setLoading(false);
         }
-    }, [templateId]);
+    }, [templateId, addToast]);
 
     const addBlock = useCallback((blockType) => {
         const newBlock = { id: Date.now().toString(), type: blockType.type, data: { ...blockType.defaultData } };
@@ -164,6 +203,7 @@ function BuilderContent() {
     const duplicateBlock = useCallback((id) => {
         setBlocks(prev => {
             const idx = prev.findIndex(b => b.id === id);
+            if (idx === -1) return prev;
             const clone = { ...prev[idx], id: Date.now().toString(), data: { ...prev[idx].data } };
             const arr = [...prev];
             arr.splice(idx + 1, 0, clone);
@@ -172,30 +212,47 @@ function BuilderContent() {
     }, []);
 
     const handleSave = async () => {
-        if (!templateName) {
-            setSuccessMessage('');
-            setErrorMessage('Please enter a template name.');
+        if (!templateName.trim()) {
+            addToast('Please enter a template name.', 'error');
             return;
         }
         setSaving(true);
         try {
-            setErrorMessage('');
             const html = generateHTML(blocks);
-            const payload = { name: templateName, subject: subject || templateName, htmlContent: html, designJson: blocks };
+            const payload = { name: templateName.trim(), subject: subject || templateName.trim(), htmlContent: html, designJson: blocks };
             if (templateId) {
                 await api.updateEmailTemplate(templateId, payload);
-                setSuccessMessage('Template updated successfully.');
+                addToast('Template updated successfully.');
             } else {
                 const res = await api.createEmailTemplate(payload);
                 router.replace(`/templates/builder?id=${res.id}`);
-                setSuccessMessage('Template saved successfully.');
+                addToast('Template saved successfully.');
             }
         } catch (err) {
-            setSuccessMessage('');
-            setErrorMessage(err.message);
+            addToast(err.message || 'Failed to save template.', 'error');
         }
         finally { setSaving(false); }
     };
+
+    // Shared image upload handler used by both the properties panel
+    const handleImageUpload = useCallback(async (file, blockId) => {
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            addToast('Please select a valid image file (JPG, PNG, GIF, WebP).', 'error');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            addToast('Image must be smaller than 5MB.', 'error');
+            return;
+        }
+        try {
+            const res = await api.uploadTemplateImage(file);
+            updateBlock(blockId, { src: res.url });
+            addToast('Image uploaded successfully.');
+        } catch (err) {
+            addToast('Image upload failed: ' + (err.message || 'Unknown error'), 'error');
+        }
+    }, [addToast, updateBlock]);
 
     if (loading) {
         return <div style={{padding:'4rem',textAlign:'center'}}>Loading builder...</div>;
@@ -230,14 +287,13 @@ function BuilderContent() {
                             <Button onClick={handleSave} loading={saving}><MdSave /> Save</Button>
                         </div>
                     </div>
-                    {errorMessage && (
-                        <div style={{ background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', color:'#ef4444', padding:'10px 12px', borderRadius:'8px', marginBottom:'1rem', fontSize:'0.875rem' }}>
-                            {errorMessage}
-                        </div>
-                    )}
-                    {successMessage && (
-                        <div style={{ background:'rgba(22,163,74,0.12)', border:'1px solid rgba(22,163,74,0.25)', color:'#16a34a', padding:'10px 12px', borderRadius:'8px', marginBottom:'1rem', fontSize:'0.875rem' }}>
-                            {successMessage}
+
+                    {/* Toast Notifications */}
+                    {toasts.length > 0 && (
+                        <div style={{ padding: '0.5rem 1rem 0' }}>
+                            {toasts.map(t => (
+                                <Toast key={t.id} message={t.message} type={t.type} onDismiss={() => removeToast(t.id)} />
+                            ))}
                         </div>
                     )}
 
@@ -276,7 +332,11 @@ function BuilderContent() {
                 <div className={styles.properties}>
                     <h3 className={styles.paletteTitle}>Properties</h3>
                     {selectedBlock ? (
-                        <BlockEditor block={selectedBlock} onChange={(data) => updateBlock(selectedBlock.id, data)} />
+                        <BlockEditor
+                            block={selectedBlock}
+                            onChange={(data) => updateBlock(selectedBlock.id, data)}
+                            onImageUpload={(file) => handleImageUpload(file, selectedBlock.id)}
+                        />
                     ) : (
                         <p className={styles.noSelection}>Select a block to edit its properties</p>
                     )}
@@ -307,10 +367,21 @@ function generateBlockPreview(block) {
     }
 }
 
-function BlockEditor({ block, onChange }) {
+function BlockEditor({ block, onChange, onImageUpload }) {
+    const [uploading, setUploading] = useState(false);
     const s = { display:'flex',flexDirection:'column',gap:'12px' };
     const inputStyle = { width:'100%',padding:'8px 10px',border:'1px solid #d1d5db',borderRadius:'6px',fontSize:'0.85rem' };
     const labelStyle = { fontSize:'0.75rem',fontWeight:600,color:'#6b7280',marginBottom:'2px' };
+
+    const handleFileUpload = async (file) => {
+        if (!file) return;
+        setUploading(true);
+        try {
+            await onImageUpload(file);
+        } finally {
+            setUploading(false);
+        }
+    };
 
     switch(block.type) {
         case 'heading':
@@ -330,35 +401,46 @@ function BlockEditor({ block, onChange }) {
                     <label style={labelStyle}>Image Upload</label>
                     <div 
                         style={{
-                            border:'2px dashed #d1d5db', borderRadius:'6px', padding:'16px', 
-                            textAlign:'center', background:'#f9fafb', cursor:'pointer',
-                            fontSize:'0.85rem', color:'#6b7280', transition:'all 0.2s', position: 'relative'
+                            border: uploading ? '2px solid #3b82f6' : '2px dashed #d1d5db',
+                            borderRadius:'6px', padding:'16px', 
+                            textAlign:'center',
+                            background: uploading ? '#eff6ff' : '#f9fafb',
+                            cursor: uploading ? 'wait' : 'pointer',
+                            fontSize:'0.85rem', color:'#6b7280', transition:'all 0.2s', position: 'relative',
+                            opacity: uploading ? 0.7 : 1,
                         }}
-                        onDragOver={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.background = '#eff6ff'; }}
-                        onDragLeave={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = '#d1d5db'; e.currentTarget.style.background = '#f9fafb'; }}
+                        onDragOver={(e) => { e.preventDefault(); if (!uploading) { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.background = '#eff6ff'; } }}
+                        onDragLeave={(e) => { e.preventDefault(); if (!uploading) { e.currentTarget.style.borderColor = '#d1d5db'; e.currentTarget.style.background = '#f9fafb'; } }}
                         onDrop={async (e) => {
                             e.preventDefault();
                             e.currentTarget.style.borderColor = '#d1d5db'; e.currentTarget.style.background = '#f9fafb';
+                            if (uploading) return;
                             const file = e.dataTransfer.files[0];
-                            if (!file || !file.type.startsWith('image/')) return alert('Please drop an image file');
-                            try {
-                                const res = await api.uploadTemplateImage(file);
-                                onChange({src: res.url});
-                            } catch (err) { alert('Upload failed: ' + err.message); }
+                            if (!file) return;
+                            await handleFileUpload(file);
                         }}
                     >
-                        Drop image here or click to upload
+                        {uploading ? (
+                            <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'8px' }}>
+                                <MdCloudUpload size={20} style={{ animation: 'pulse 1.5s infinite' }} />
+                                <span>Uploading...</span>
+                            </div>
+                        ) : (
+                            <>
+                                <MdCloudUpload size={24} style={{ marginBottom: '4px', display: 'block', margin: '0 auto 4px' }} />
+                                Drop image here or click to upload
+                            </>
+                        )}
                         <input 
                             type="file" 
                             accept="image/*"
-                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                            disabled={uploading}
+                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: uploading ? 'wait' : 'pointer' }}
                             onChange={async (e) => {
                                 const file = e.target.files[0];
                                 if (!file) return;
-                                try {
-                                    const res = await api.uploadTemplateImage(file);
-                                    onChange({src: res.url});
-                                } catch (err) { alert('Upload failed: ' + err.message); }
+                                await handleFileUpload(file);
+                                e.target.value = '';
                             }}
                         />
                     </div>

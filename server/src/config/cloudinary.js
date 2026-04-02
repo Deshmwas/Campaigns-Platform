@@ -16,18 +16,36 @@ const hasCloudinary =
   !!config.cloudinary.api_key &&
   !!config.cloudinary.api_secret;
 
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'campaigns/templates',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
-    public_id: (req, file) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+// Template image storage — with disk fallback when Cloudinary is not configured
+let storage;
+if (hasCloudinary) {
+  storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: 'campaigns/templates',
+      allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+      public_id: (req, file) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
         return 'template-img-' + uniqueSuffix;
+      },
     },
-  },
-});
+  });
+} else {
+  const uploadsDir = path.join(process.cwd(), 'uploads', 'templates');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  storage = multer.diskStorage({
+    destination: uploadsDir,
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      const ext = path.extname(file.originalname) || '.jpg';
+      cb(null, `template-img-${uniqueSuffix}${ext}`);
+    },
+  });
+}
 
+// Logo storage — with disk fallback when Cloudinary is not configured
 let logoStorage;
 if (hasCloudinary) {
   logoStorage = new CloudinaryStorage({
@@ -56,4 +74,4 @@ if (hasCloudinary) {
   });
 }
 
-export { cloudinary, storage, logoStorage };
+export { cloudinary, storage, logoStorage, hasCloudinary };

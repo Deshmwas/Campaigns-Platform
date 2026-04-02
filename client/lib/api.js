@@ -5,11 +5,6 @@ class ApiClient {
         this.baseUrl = API_URL;
     }
 
-    ensureAbsoluteUrl(path) {
-        if (!path) return null;
-        return path.startsWith('http') ? path : `${this.baseUrl}${path}`;
-    }
-
     getToken() {
         if (typeof window !== 'undefined') {
             return localStorage.getItem('token');
