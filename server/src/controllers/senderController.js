@@ -45,6 +45,8 @@ export const createSender = async (req, res, next) => {
 
         const normalizedPassword = smtpPassword.replace(/\s+/g, '');
 
+        console.log(`[SenderService] Creating new sender: ${email}`);
+        console.time('sender-creation');
         const sender = await prisma.senderEmail.create({
             data: {
                 organizationId: req.organizationId,
@@ -55,8 +57,11 @@ export const createSender = async (req, res, next) => {
                 encryption: encryption || 'TLS',
             },
         });
+        console.timeEnd('sender-creation');
+        console.log(`[SenderService] Successfully created sender ID: ${sender.id}`);
         res.status(201).json(sender);
     } catch (error) {
+        console.error('[SenderService] Error during sender creation:', error.message);
         next(error);
     }
 };

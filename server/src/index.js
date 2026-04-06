@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { execSync } from 'child_process';
+import { exec, execSync } from 'child_process';
 import { config } from './config/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import emailEngine from './services/EmailEngine.js';
@@ -58,15 +58,15 @@ async function startServer() {
     try {
         console.log('🚀 Starting Campaigns Server...');
 
-        // Database Pre-flight Sync (Ensures tables exist on Render/Production)
+        // Database Pre-flight Sync (Ensures tables exist on Production)
         console.log('📦 Syncing database schema...');
-        try {
-            execSync('npx prisma db push --accept-data-loss', { stdio: 'inherit' });
-            console.log('✅ Database schema synced');
-        } catch (dbError) {
-            console.error('⚠️  Database sync failed:', dbError.message);
-            // Continue anyway, as the tables might already exist
-        }
+        exec('npx prisma db push --accept-data-loss', (error, stdout, stderr) => {
+            if (error) {
+                console.error('⚠️  Database sync failed:', error.message);
+            } else {
+                console.log('✅ Database schema synced');
+            }
+        });
 
         // Initialize Email Engine
         await emailEngine.initialize();
