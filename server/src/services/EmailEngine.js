@@ -13,7 +13,12 @@ class EmailEngine {
     }
 
     async initialize() {
-        try {
+            if (!config.smtp.host) {
+                console.log('⚠️  SMTP_HOST not configured. Email engine will run in SIMULATED mode.');
+                this.isReady = false;
+                return;
+            }
+            try {
             this.transporter = nodemailer.createTransport({
                 host: config.smtp.host,
                 port: config.smtp.port,

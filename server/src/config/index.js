@@ -29,12 +29,12 @@ export const config = {
   },
 
   app: {
-    url: process.env.APP_URL || 'http://localhost:3000',
-    apiUrl: process.env.API_URL || 'http://localhost:5000',
+    url: process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000',
+    apiUrl: process.env.API_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5000',
   },
 
   tracking: {
-    domain: process.env.TRACKING_DOMAIN || 'http://localhost:5000',
+    domain: process.env.TRACKING_DOMAIN || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5000',
   },
 
   rateLimits: {

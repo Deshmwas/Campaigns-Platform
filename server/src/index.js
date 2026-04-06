@@ -58,14 +58,10 @@ async function startServer() {
     try {
         console.log('🚀 Starting Campaigns Server...');
 
-        // Database Pre-flight Sync (Ensures tables exist on Production)
-        console.log('📦 Syncing database schema...');
-        exec('npx prisma db push --accept-data-loss', (error, stdout, stderr) => {
-            if (error) {
-                console.error('⚠️  Database sync failed:', error.message);
-            } else {
-                console.log('✅ Database schema synced');
-            }
+        // Database Maintenance (Non-blocking)
+        exec('npx prisma db push --accept-data-loss', (error) => {
+            if (error) console.error('⚠️  Background schema sync failed:', error.message);
+            else console.log('✅ Background schema sync complete');
         });
 
         // Initialize Email Engine
@@ -79,7 +75,7 @@ async function startServer() {
 
         // Start HTTP server
         const server = app.listen(config.port, () => {
-            console.log(`✅ Server running on port ${config.port}`);
+            console.log(`✅ Server is LIVE on port ${config.port}`);
             console.log(`📍 API URL: ${config.app.apiUrl}`);
             console.log(`🌐 Environment: ${config.nodeEnv}`);
         });
