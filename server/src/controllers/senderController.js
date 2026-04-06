@@ -128,7 +128,13 @@ export const testSender = async (req, res, next) => {
             res.json({ success: true, message: 'SMTP connection successful' });
         } catch (smtpError) {
             transporter.close();
-            res.json({ success: false, message: `SMTP failed: ${smtpError.message}` });
+            let errorMessage = `SMTP failed: ${smtpError.message}`;
+            
+            if (smtpError.code === 'ETIMEDOUT' || smtpError.message.includes('timeout')) {
+                errorMessage = `SMTP failed: Connection timeout. This often happens if your hosting provider (like Render Free Tier) blocks SMTP ports (25, 465, 587). Please use an Email API like Resend if possible.`;
+            }
+            
+            res.json({ success: false, message: errorMessage });
         }
     } catch (error) {
         next(error);

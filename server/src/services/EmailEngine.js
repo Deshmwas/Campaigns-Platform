@@ -89,6 +89,33 @@ class EmailEngine {
             let activeTransporter = this.transporter;
             let closeAfter = false;
 
+            // --- RESEND API SUPPORT ---
+            if (!senderConfig && config.resendApiKey) {
+                const response = await fetch('https://api.resend.com/emails', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${config.resendApiKey}`,
+                    },
+                    body: JSON.stringify({
+                        from: `"${fromName}" <${fromEmail}>`,
+                        to: Array.isArray(to) ? to : [to],
+                        subject,
+                        html: this.normalizeUrls(html),
+                        text: text || this.htmlToText(html),
+                    }),
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(`Resend API Error: ${data.message || response.statusText}`);
+                }
+
+                console.log(`📧 System Email sent via Resend API to ${to} - ID: ${data.id}`);
+                return { success: true, messageId: data.id };
+            }
+            // ---------------------------
+
             if (senderConfig) {
                 const nodemailer = (await import('nodemailer')).default;
                 activeTransporter = nodemailer.createTransport({
@@ -99,6 +126,34 @@ class EmailEngine {
                 });
                 closeAfter = true;
             }
+
+            // --- RESEND API SUPPORT ---
+            if (!senderConfig && config.resendApiKey) {
+                const response = await fetch('https://api.resend.com/emails', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${config.resendApiKey}`,
+                    },
+                    body: JSON.stringify({
+                        from: `${fromName} <${fromEmail}>`,
+                        to: Array.isArray(to) ? to : [to],
+                        subject,
+                        html: trackedHtml,
+                        text: text || this.htmlToText(html),
+                    }),
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(`Resend API Error: ${data.message || response.statusText}`);
+                }
+
+                console.log(`📧 Email sent via Resend API to ${to} - ID: ${data.id}`);
+                this.rateLimiter.count++;
+                return { success: true, messageId: data.id, response: 'Sent via Resend' };
+            }
+            // ---------------------------
 
             if (senderConfig || this.isReady) {
                 const info = await activeTransporter.sendMail(mailOptions);

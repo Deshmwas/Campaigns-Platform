@@ -84,6 +84,14 @@ export default function SendersPage() {
                     </Button>
                 </div>
 
+                <div className={styles.infoBox}>
+                    <h4>💡 Using Render or other Cloud Hosts?</h4>
+                    <p>
+                        Many hosting providers (like Render Free Tier) block SMTP ports (25, 465, 587). 
+                        If your SMTP test fails with a <b>Connection Timeout</b>, please use an Email API like <b>Resend</b> by setting the <code>RESEND_API_KEY</code> environment variable.
+                    </p>
+                </div>
+
                 {loading ? (
                     <Card><div className={styles.loading}>Loading senders...</div></Card>
                 ) : senders.length === 0 ? (

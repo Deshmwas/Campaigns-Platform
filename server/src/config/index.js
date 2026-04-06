@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const config = {
+  resendApiKey: process.env.RESEND_API_KEY,
   port: process.env.PORT || 5000,
   nodeEnv: process.env.NODE_ENV || 'development',
   
