@@ -96,7 +96,13 @@ class EmailEngine {
                     console.log(`📧 Email sent to ${to} - Message ID: ${info.messageId}`);
                     return { success: true, messageId: info.messageId, response: info.response };
                 } catch (smtpError) {
-                    if (config.resendApiKey && (smtpError.code === 'ETIMEDOUT' || smtpError.message.includes('timeout') || smtpError.code === 'ECONNREFUSED')) {
+                    // --- FALLBACK TO RESEND ON TIMEOUT OR UNAVAILABLE ---
+                    const isTimeout = smtpError.code === 'ETIMEDOUT' || 
+                                    smtpError.code === 'ECONNREFUSED' || 
+                                    smtpError.code === 'ECONNABORTED' || 
+                                    /timeout/i.test(smtpError.message);
+
+                    if (config.resendApiKey && isTimeout) {
                         return await this.sendViaResend({ fromName, fromEmail, to, subject, html: trackedHtml, text });
                     }
                     throw smtpError;
