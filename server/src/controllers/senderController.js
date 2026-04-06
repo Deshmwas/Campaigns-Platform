@@ -128,6 +128,17 @@ export const testSender = async (req, res, next) => {
             res.json({ success: true, message: 'SMTP connection successful' });
         } catch (smtpError) {
             transporter.close();
+            
+            // --- FIX FOR RENDER/RESEND: Allow verification if Resend API is available ---
+            if (config.resendApiKey && (smtpError.code === 'ETIMEDOUT' || smtpError.message.includes('timeout'))) {
+                await prisma.senderEmail.update({ where: { id: sender.id }, data: { isVerified: true } });
+                return res.json({ 
+                    success: true, 
+                    message: 'SMTP timed out, but Resend API is detected. Sender verified for use via HTTP fallback.' 
+                });
+            }
+            // -------------------------------------------------------------------------
+
             let errorMessage = `SMTP failed: ${smtpError.message}`;
             
             if (smtpError.code === 'ETIMEDOUT' || smtpError.message.includes('timeout')) {
