@@ -1,10 +1,10 @@
-let API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+// On Vercel, NEXT_PUBLIC_API_URL should point to your Render backend.
+// If it's not set, we'll try to use your Render URL directly in production.
+const IS_DEV = process.env.NODE_ENV === 'development';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 
+                (IS_DEV ? 'http://localhost:5000' : 'https://campaigns-platform.onrender.com');
 
-// In browser, if API_URL points to localhost but we are on a different domain, 
-// use the current domain instead (most common layout for self-hosted Render)
-if (typeof window !== 'undefined' && API_URL.includes('localhost') && !window.location.host.includes('localhost')) {
-    API_URL = window.location.origin;
-}
+
 
 class ApiClient {
     constructor() {
