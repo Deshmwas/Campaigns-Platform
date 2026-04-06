@@ -154,7 +154,15 @@ export default function SendersPage() {
                             <form onSubmit={handleSubmit} className={styles.modalForm}>
                                 <div className={styles.formRow}>
                                     <Input label="Sender Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required placeholder="Marketing Team" />
-                                    <Input label="Sender Email" type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required placeholder="marketing@company.com" />
+                                    <div className={styles.inputWrapper}>
+                                        <Input label="Sender Email" type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required placeholder="marketing@company.com" />
+                                        {form.email && ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com'].some(d => form.email.toLowerCase().endsWith(d)) && (
+                                            <div className={styles.domainWarning}>
+                                                <MdWarning />
+                                                <span>Public domains (Gmail/Yahoo) require a verified custom domain on Resend for production delivery. We'll use a fallback for testing.</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className={styles.formRow}>
                                     <Input label="SMTP Host" value={form.smtpHost} onChange={e => setForm({...form, smtpHost: e.target.value})} required placeholder="smtp.gmail.com" />
