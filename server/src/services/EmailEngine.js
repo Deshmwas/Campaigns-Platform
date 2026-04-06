@@ -27,9 +27,19 @@ class EmailEngine {
                 pool: true,
                 maxConnections: 5,
                 maxMessages: 100,
+                connectionTimeout: 5000, // 5 second connection timeout
             });
 
-            await this.transporter.verify();
+            // --- NON-BLOCKING VERIFICATION WITH TIMEOUT ---
+            // On Render, this often hangs forever because ports are blocked.
+            // We wrap it in a 5sec race to ensure the server finishes booting.
+            console.log('📡 Verifying SMTP connection (5s timeout)...');
+            const verifyPromise = this.transporter.verify();
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('SMTP Verification Timeout')), 5000)
+            );
+
+            await Promise.race([verifyPromise, timeoutPromise]);
             this.isReady = true;
             console.log('✅ Email engine initialized successfully');
         } catch (error) {

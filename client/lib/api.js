@@ -1,8 +1,9 @@
 // On Vercel, NEXT_PUBLIC_API_URL should point to your Render backend.
-// If it's not set, we'll try to use your Render URL directly in production.
 const IS_DEV = process.env.NODE_ENV === 'development';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 
+                process.env.API_URL ||
                 (IS_DEV ? 'http://localhost:5000' : 'https://campaigns-platform.onrender.com');
+
 
 
 
