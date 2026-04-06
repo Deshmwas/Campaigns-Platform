@@ -1,4 +1,10 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+let API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
+// In browser, if API_URL points to localhost but we are on a different domain, 
+// use the current domain instead (most common layout for self-hosted Render)
+if (typeof window !== 'undefined' && API_URL.includes('localhost') && !window.location.host.includes('localhost')) {
+    API_URL = window.location.origin;
+}
 
 class ApiClient {
     constructor() {
