@@ -1,5 +1,6 @@
 import prisma from '../config/database.js';
 import nodemailer from 'nodemailer';
+import { config } from '../config/index.js';
 
 export const getSenders = async (req, res, next) => {
     try {
