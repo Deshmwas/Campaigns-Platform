@@ -216,6 +216,12 @@ class ApiClient {
         });
     }
 
+    async retryFailedCampaign(id) {
+        return this.request(`/api/campaigns/${id}/retry-failed`, {
+            method: 'POST',
+        });
+    }
+
     async deleteCampaign(id) {
         return this.request(`/api/campaigns/${id}`, {
             method: 'DELETE',

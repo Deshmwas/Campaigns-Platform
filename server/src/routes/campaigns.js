@@ -11,6 +11,7 @@ router.get('/:id', campaignController.getCampaign);
 router.post('/', authorize('ADMIN', 'MANAGER'), campaignController.createCampaign);
 router.put('/:id', authorize('ADMIN', 'MANAGER'), campaignController.updateCampaign);
 router.post('/:id/send', authorize('ADMIN', 'MANAGER'), campaignController.sendCampaign);
+router.post('/:id/retry-failed', authorize('ADMIN', 'MANAGER'), campaignController.retryFailedCampaign);
 router.delete('/:id', authorize('ADMIN', 'MANAGER'), campaignController.deleteCampaign);
 
 export default router;

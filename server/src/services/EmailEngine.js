@@ -120,7 +120,14 @@ class EmailEngine {
     }
 
     async sendViaResend({ fromName, fromEmail, to, subject, html, text }) {
-        console.warn(`🚀 Sending via Resend API to ${to}...`);
+        // Fallback to verified domain if using a public domain (Resend only allows verified domains)
+        const publicDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com'];
+        const domain = fromEmail.split('@')[1];
+        const finalFrom = publicDomains.includes(domain?.toLowerCase()) 
+            ? `${fromName} <${config.resendDefaultFrom}>`
+            : `${fromName} <${fromEmail}>`;
+
+        console.warn(`🚀 Sending via Resend API to ${to} (from: ${finalFrom})...`);
         const response = await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: {
@@ -128,7 +135,7 @@ class EmailEngine {
                 'Authorization': `Bearer ${config.resendApiKey}`,
             },
             body: JSON.stringify({
-                from: `${fromName} <${fromEmail}>`,
+                from: finalFrom,
                 to: Array.isArray(to) ? to : [to],
                 subject,
                 html,

@@ -101,6 +101,15 @@
     gap: var(--spacing-sm);
 }
 
+.retryBtn {
+    border-color: #f59e0b !important;
+    color: #f59e0b !important;
+}
+
+.retryBtn:hover {
+    background-color: rgba(245, 158, 11, 0.05) !important;
+}
+
 .statsGrid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));

@@ -3,6 +3,7 @@ dotenv.config();
 
 export const config = {
   resendApiKey: process.env.RESEND_API_KEY,
+  resendDefaultFrom: process.env.RESEND_DEFAULT_FROM || 'onboarding@resend.dev',
   port: process.env.PORT || 5000,
   nodeEnv: process.env.NODE_ENV || 'development',
   

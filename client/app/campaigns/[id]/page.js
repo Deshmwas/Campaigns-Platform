@@ -33,6 +33,7 @@ export default function CampaignDetailPage() {
     };
 
     const confirmSend = () => setConfirmState({ isOpen: true, type: 'SEND' });
+    const confirmRetry = () => setConfirmState({ isOpen: true, type: 'RETRY' });
     const confirmDelete = () => setConfirmState({ isOpen: true, type: 'DELETE' });
 
     const handleConfirmAction = async () => {
@@ -46,6 +47,14 @@ export default function CampaignDetailPage() {
                 loadCampaign();
             } catch (error) {
                 alert('Failed to send campaign: ' + error.message);
+            }
+        } else if (type === 'RETRY') {
+            try {
+                await api.retryFailedCampaign(id);
+                alert('Retrying failed recipients!');
+                loadCampaign();
+            } catch (error) {
+                alert('Failed to retry campaign: ' + error.message);
             }
         } else if (type === 'DELETE') {
             try {
@@ -105,6 +114,11 @@ export default function CampaignDetailPage() {
                         {campaign.status === 'DRAFT' && (
                             <Button onClick={confirmSend}>
                                 <MdSend /> Send Now
+                            </Button>
+                        )}
+                        {campaign.status !== 'SENDING' && stats.failedCount > 0 && (
+                            <Button variant="outline" onClick={confirmRetry} className={styles.retryBtn}>
+                                <MdSend /> Retry Failed
                             </Button>
                         )}
                         {campaign.status !== 'SENDING' && (
@@ -205,10 +219,10 @@ export default function CampaignDetailPage() {
 
                 <ConfirmModal 
                     isOpen={confirmState.isOpen}
-                    title={confirmState.type === 'SEND' ? 'Send Campaign' : 'Delete Campaign'}
-                    message={confirmState.type === 'SEND' ? 'Are you sure you want to officially dispatch this campaign to all recipients?' : 'Are you sure you want to delete this campaign? This action cannot be undone and will permanently cancel any active deliveries.'}
-                    confirmText={confirmState.type === 'SEND' ? 'Send Now' : 'Delete'}
-                    variant={confirmState.type === 'SEND' ? 'primary' : 'danger'}
+                    title={confirmState.type === 'SEND' ? 'Send Campaign' : confirmState.type === 'RETRY' ? 'Retry Failed Emails' : 'Delete Campaign'}
+                    message={confirmState.type === 'SEND' ? 'Are you sure you want to officially dispatch this campaign to all recipients?' : confirmState.type === 'RETRY' ? `Are you sure you want to retry sending to the ${stats.failedCount} failed recipients?` : 'Are you sure you want to delete this campaign? This action cannot be undone and will permanently cancel any active deliveries.'}
+                    confirmText={confirmState.type === 'SEND' ? 'Send Now' : confirmState.type === 'RETRY' ? 'Retry Now' : 'Delete'}
+                    variant={confirmState.type === 'DELETE' ? 'danger' : 'primary'}
                     onConfirm={handleConfirmAction}
                     onCancel={() => setConfirmState({ isOpen: false, type: null })}
                 />

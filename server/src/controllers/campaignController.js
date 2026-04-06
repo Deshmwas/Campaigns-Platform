@@ -238,6 +238,82 @@ export const sendCampaign = async (req, res, next) => {
     }
 };
 
+export const retryFailedCampaign = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        const campaign = await prisma.campaign.findFirst({
+            where: { id, organizationId: req.organizationId },
+            include: {
+                recipients: { 
+                    where: { status: 'FAILED' },
+                    include: { contact: true } 
+                },
+                senderEmail: true,
+            },
+        });
+
+        if (!campaign) {
+            return res.status(404).json({ error: 'Campaign not found' });
+        }
+
+        if (campaign.recipients.length === 0) {
+            return res.status(400).json({ error: 'No failed recipients to retry' });
+        }
+
+        // Build sender config
+        const senderConfig = campaign.senderEmail ? {
+            host: campaign.senderEmail.smtpHost,
+            port: campaign.senderEmail.smtpPort,
+            secure: campaign.senderEmail.encryption === 'SSL',
+            auth: { user: campaign.senderEmail.smtpUsername, pass: campaign.senderEmail.smtpPassword },
+            fromName: campaign.senderEmail.name,
+            fromEmail: campaign.senderEmail.email,
+        } : null;
+
+        // Reset failed recipients to PENDING and re-enqueue
+        for (const recipient of campaign.recipients) {
+            await prisma.campaignRecipient.update({
+                where: { id: recipient.id },
+                data: { status: 'PENDING', errorMessage: null, sentAt: null }
+            });
+
+            if (campaign.type === 'EMAIL') {
+                const personalizedContent = personalizeContent(campaign.content, recipient.contact);
+                const personalizedSubject = personalizeContent(campaign.subject, recipient.contact);
+
+                await queueService.enqueueJob({
+                    type: 'email',
+                    payload: {
+                        recipientId: recipient.id,
+                        campaignId: campaign.id,
+                        to: recipient.contact.email,
+                        subject: personalizedSubject,
+                        html: personalizedContent,
+                        senderConfig,
+                    },
+                });
+            } else if (campaign.type === 'SMS') {
+                const personalizedMessage = personalizeContent(campaign.content, recipient.contact);
+
+                await queueService.enqueueJob({
+                    type: 'sms',
+                    payload: {
+                        recipientId: recipient.id,
+                        campaignId: campaign.id,
+                        to: recipient.contact.phone,
+                        message: personalizedMessage,
+                    },
+                });
+            }
+        }
+
+        res.json({ message: `Retrying ${campaign.recipients.length} failed messages`, count: campaign.recipients.length });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const deleteCampaign = async (req, res, next) => {
     try {
         const { id } = req.params;
