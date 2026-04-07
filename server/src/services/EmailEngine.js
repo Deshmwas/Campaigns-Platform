@@ -113,6 +113,7 @@ class EmailEngine {
                                     /timeout/i.test(smtpError.message);
 
                     if (config.resendApiKey && isTimeout) {
+                        console.warn(`⚠️ SMTP Timeout for ${to}. Falling back to Resend API...`);
                         return await this.sendViaResend({ fromName, fromEmail, to, subject, html: trackedHtml, text });
                     }
                     throw smtpError;
@@ -130,36 +131,50 @@ class EmailEngine {
     }
 
     async sendViaResend({ fromName, fromEmail, to, subject, html, text }) {
-        // Fallback to verified domain if using a public domain (Resend only allows verified domains)
+        // Fallback to verified domain if using a public domain OR if custom domain verification fails
         const publicDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com'];
         const domain = fromEmail.split('@')[1];
-        const finalFrom = publicDomains.includes(domain?.toLowerCase()) 
+        
+        let finalFrom = publicDomains.includes(domain?.toLowerCase()) 
             ? `${fromName} <${config.resendDefaultFrom}>`
             : `${fromName} <${fromEmail}>`;
 
-        console.warn(`🚀 Sending via Resend API to ${to} (from: ${finalFrom})...`);
-        const response = await fetch('https://api.resend.com/emails', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${config.resendApiKey}`,
-            },
-            body: JSON.stringify({
-                from: finalFrom,
-                to: Array.isArray(to) ? to : [to],
-                subject,
-                html,
-                text: text || this.htmlToText(html),
-            }),
-        });
+        const sendRequest = async (from) => {
+            const response = await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${config.resendApiKey}`,
+                },
+                body: JSON.stringify({
+                    from,
+                    to: Array.isArray(to) ? to : [to],
+                    subject,
+                    html,
+                    text: text || this.htmlToText(html),
+                }),
+            });
+            return { ok: response.ok, status: response.status, data: await response.json() };
+        };
 
-        const data = await response.json();
-        if (response.ok) {
-            console.log(`📧 Email successfully sent via Resend API to ${to} - ID: ${data.id}`);
+        console.log(`🚀 Attempting Resend API send to ${to} (from: ${finalFrom})...`);
+        let result = await sendRequest(finalFrom);
+
+        // If first attempt fails because of domain verification, fallback to default sender
+        if (!result.ok && result.data?.message?.toLowerCase().includes('not verified')) {
+            console.warn(`⚠️ Domain ${domain} not verified on Resend. Falling back to default sender ${config.resendDefaultFrom}...`);
+            finalFrom = `${fromName} <${config.resendDefaultFrom}>`;
+            result = await sendRequest(finalFrom);
+        }
+
+        if (result.ok) {
+            console.log(`📧 Email successfully sent via Resend API to ${to} - ID: ${result.data.id}`);
             this.rateLimiter.count++;
-            return { success: true, messageId: data.id, response: 'Sent via Resend' };
+            return { success: true, messageId: result.data.id, response: 'Sent via Resend' };
         } else {
-            throw new Error(`Resend API Error: ${data.message || response.statusText}`);
+            const errorMsg = result.data?.message || `HTTP ${result.status}`;
+            console.error(`❌ Resend API Error: ${errorMsg}`);
+            throw new Error(`Resend API Error: ${errorMsg}`);
         }
     }
 

@@ -132,6 +132,24 @@
 }
 .modalActions { display: flex; justify-content: flex-end; gap: var(--spacing-sm); margin-top: var(--spacing-md); }
 
+.advancedToggle {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--color-gray-500);
+    padding: var(--spacing-sm);
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--color-gray-300);
+    transition: all 0.2s;
+    user-select: none;
+    margin: 8px 0;
+}
+.advancedToggle:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    background: rgba(22, 163, 74, 0.05);
+}
+
 @media (max-width: 768px) {
     .grid { grid-template-columns: 1fr; }
     .formRow { grid-template-columns: 1fr; }

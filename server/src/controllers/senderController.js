@@ -143,7 +143,11 @@ export const testSender = async (req, res, next) => {
             let errorMessage = `SMTP failed: ${smtpError.message}`;
             
             if (smtpError.code === 'ETIMEDOUT' || smtpError.message.includes('timeout')) {
-                errorMessage = `SMTP failed: Connection timeout. This often happens if your hosting provider (like Render Free Tier) blocks SMTP ports (25, 465, 587). Please use an Email API like Resend if possible.`;
+                errorMessage = `Connection Timeout: The server took too long to respond. This often happens if your host (like Render) blocks SMTP ports 587/465.`;
+            } else if (smtpError.code === 'ECONNREFUSED') {
+                errorMessage = `Connection Refused: The SMTP host '${sender.smtpHost}' refused to connect on port ${sender.smtpPort}. Check if the host and port are correct.`;
+            } else if (smtpError.code === 'EAUTH' || smtpError.message.includes('auth') || smtpError.message.includes('Invalid login')) {
+                errorMessage = `Authentication Failed: The username or password for ${sender.email} is incorrect. If using Gmail, make sure you use an 'App Password'.`;
             }
             
             res.json({ success: false, message: errorMessage });

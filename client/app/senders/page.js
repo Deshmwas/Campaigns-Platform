@@ -16,10 +16,29 @@ export default function SendersPage() {
     const [editing, setEditing] = useState(null);
     const [testing, setTesting] = useState(null);
     const [testResult, setTestResult] = useState(null);
+    const [showAdvanced, setShowAdvanced] = useState(false);
+    const [provider, setProvider] = useState('custom');
     const [form, setForm] = useState({
         name: '', email: '', smtpHost: '', smtpPort: 587,
         smtpUsername: '', smtpPassword: '', encryption: 'TLS',
     });
+
+    const presets = {
+        gmail: { host: 'smtp.gmail.com', port: 587, encryption: 'TLS' },
+        outlook: { host: 'smtp.office365.com', port: 587, encryption: 'TLS' },
+        zoho: { host: 'smtp.zoho.com', port: 465, encryption: 'SSL' },
+        icloud: { host: 'smtp.mail.me.com', port: 587, encryption: 'TLS' },
+        custom: { host: '', port: 587, encryption: 'TLS' }
+    };
+
+    const handleProviderChange = (e) => {
+        const val = e.target.value;
+        setProvider(val);
+        if (val !== 'custom') {
+            const preset = presets[val];
+            setForm({ ...form, smtpHost: preset.host, smtpPort: preset.port, encryption: preset.encryption });
+        }
+    };
 
     useEffect(() => { loadSenders(); }, []);
 
@@ -51,6 +70,7 @@ export default function SendersPage() {
             smtpPort: sender.smtpPort, smtpUsername: sender.smtpUsername || '',
             smtpPassword: '', encryption: sender.encryption,
         });
+        setProvider('custom');
         setEditing(sender.id);
         setShowModal(true);
     };
@@ -79,7 +99,7 @@ export default function SendersPage() {
                         <h1 className={styles.title}>Sender Emails</h1>
                         <p className={styles.subtitle}>Manage SMTP accounts for sending campaigns</p>
                     </div>
-                    <Button onClick={() => { setEditing(null); setForm({ name:'',email:'',smtpHost:'',smtpPort:587,smtpUsername:'',smtpPassword:'',encryption:'TLS' }); setShowModal(true); }}>
+                    <Button onClick={() => { setProvider('custom'); setEditing(null); setShowAdvanced(false); setForm({ name:'',email:'',smtpHost:'',smtpPort:587,smtpUsername:'',smtpPassword:'',encryption:'TLS' }); setShowModal(true); }}>
                         <MdAdd /> Add Sender
                     </Button>
                 </div>
@@ -153,35 +173,50 @@ export default function SendersPage() {
                             <h2>{editing ? 'Edit Sender' : 'Add Sender Account'}</h2>
                             <form onSubmit={handleSubmit} className={styles.modalForm}>
                                 <div className={styles.formRow}>
-                                    <Input label="Sender Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required placeholder="Marketing Team" />
-                                    <div className={styles.inputWrapper}>
-                                        <Input label="Sender Email" type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required placeholder="marketing@company.com" />
-                                        {form.email && ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com'].some(d => form.email.toLowerCase().endsWith(d)) && (
-                                            <div className={styles.domainWarning}>
-                                                <MdWarning />
-                                                <span>Public domains (Gmail/Yahoo) require a verified custom domain on Resend for production delivery. We'll use a fallback for testing.</span>
-                                            </div>
-                                        )}
+                                    <div className={styles.selectGroup}>
+                                        <label>Email Provider</label>
+                                        <select value={provider} onChange={handleProviderChange}>
+                                            <option value="custom">Custom SMTP (Dynamic)</option>
+                                            <option value="gmail">Google / Gmail</option>
+                                            <option value="outlook">Outlook / Office 365</option>
+                                            <option value="zoho">Zoho Mail</option>
+                                            <option value="icloud">iCloud Mail</option>
+                                        </select>
                                     </div>
                                 </div>
+
                                 <div className={styles.formRow}>
-                                    <Input label="SMTP Host" value={form.smtpHost} onChange={e => setForm({...form, smtpHost: e.target.value})} required placeholder="smtp.gmail.com" />
-                                    <Input label="SMTP Port" type="number" value={form.smtpPort} onChange={e => setForm({...form, smtpPort: parseInt(e.target.value)})} required />
+                                    <Input label="Sender Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required placeholder="Marketing Team" />
+                                    <Input label="Sender Email" type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required placeholder="marketing@company.com" />
                                 </div>
+
                                 <div className={styles.formRow}>
                                     <Input label="SMTP Username" value={form.smtpUsername} onChange={e => setForm({...form, smtpUsername: e.target.value})} required placeholder="user@gmail.com" />
                                     <Input label="SMTP Password" type="password" toggleVisibility value={form.smtpPassword} onChange={e => setForm({...form, smtpPassword: e.target.value})} required={!editing} placeholder={editing ? '(unchanged)' : 'App password'} />
                                 </div>
-                                <div className={styles.formRow}>
-                                    <div className={styles.selectGroup}>
-                                        <label>Encryption</label>
-                                        <select value={form.encryption} onChange={e => setForm({...form, encryption: e.target.value})}>
-                                            <option value="TLS">TLS</option>
-                                            <option value="SSL">SSL</option>
-                                            <option value="NONE">None</option>
-                                        </select>
-                                    </div>
+
+                                <div className={styles.advancedToggle} onClick={() => setShowAdvanced(!showAdvanced)}>
+                                    {showAdvanced ? 'Hide Advanced Settings' : 'Show Advanced Settings (Host, Port, Encryption)'}
                                 </div>
+
+                                {showAdvanced && (
+                                    <>
+                                        <div className={styles.formRow}>
+                                            <Input label="SMTP Host" value={form.smtpHost} onChange={e => setForm({...form, smtpHost: e.target.value})} required placeholder="smtp.gmail.com" />
+                                            <Input label="SMTP Port" type="number" value={form.smtpPort} onChange={e => setForm({...form, smtpPort: parseInt(e.target.value)})} required />
+                                        </div>
+                                        <div className={styles.formRow}>
+                                            <div className={styles.selectGroup}>
+                                                <label>Encryption</label>
+                                                <select value={form.encryption} onChange={e => setForm({...form, encryption: e.target.value})}>
+                                                    <option value="TLS">TLS (587)</option>
+                                                    <option value="SSL">SSL (465)</option>
+                                                    <option value="NONE">None</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                                 <div className={styles.modalActions}>
                                     <Button type="button" variant="ghost" onClick={() => setShowModal(false)}>Cancel</Button>
                                     <Button type="submit">{editing ? 'Update' : 'Add Sender'}</Button>
