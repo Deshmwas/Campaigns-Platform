@@ -58,20 +58,26 @@ async function startServer() {
     try {
         console.log('🚀 Starting Campaigns Server...');
 
-        // Database Maintenance (Non-blocking)
-        exec('npx prisma db push --accept-data-loss', (error) => {
-            if (error) console.error('⚠️  Background schema sync failed:', error.message);
-            else console.log('✅ Background schema sync complete');
-        });
+        // Vercel / Serverless specific restrictions
+        // Vercel kills background tasks, provides an immutable FS, and easily exhausts connection pools
+        if (!process.env.VERCEL) {
+            // Database Maintenance (Non-blocking)
+            exec('npx prisma db push --accept-data-loss', (error) => {
+                if (error) console.error('⚠️  Background schema sync failed:', error.message);
+                else console.log('✅ Background schema sync complete');
+            });
+
+            // Start Queue Processor continuously only on real servers 
+            await queueService.start();
+        } else {
+            console.log('⚡ Vercel Detected: Skipping background DB Push and continuous Queue Service. Ensure you use Vercel Cron or manual API triggers for queue processing.');
+        }
 
         // Initialize Email Engine
         await emailEngine.initialize();
 
         // Initialize SMS Engine
         await smsEngine.initialize();
-
-        // Start Queue Processor
-        await queueService.start();
 
         // Start HTTP server
         const server = app.listen(config.port, () => {
