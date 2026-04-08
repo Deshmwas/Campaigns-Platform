@@ -10,7 +10,11 @@
     flex-direction: column;
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
     z-index: 100;
-    transition: background-color 0.3s ease;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease;
+}
+
+.collapsed {
+    width: 80px;
 }
 
 .brand {
@@ -22,6 +26,13 @@
     margin-bottom: var(--spacing-lg);
     gap: var(--spacing-md);
     color: white;
+    overflow: hidden;
+    transition: padding 0.3s ease;
+}
+
+.collapsed .brand {
+    padding: 0 var(--spacing-md);
+    justify-content: center;
 }
 
 .logo {
@@ -43,6 +54,7 @@
     font-size: 1.25rem;
     font-weight: 700;
     letter-spacing: -0.01em;
+    white-space: nowrap;
 }
 
 .nav {
@@ -51,11 +63,15 @@
     padding: 0 var(--spacing-md);
     gap: 4px;
     flex: 1;
+    overflow-x: hidden;
+}
+
+.collapsed .nav {
+    padding: 0 var(--spacing-md);
+    align-items: center;
 }
 
 .navItem {
-    display: flex;
-    align-items: center;
     gap: var(--spacing-md);
     padding: 12px var(--spacing-lg);
     border-radius: var(--radius-md);
@@ -64,6 +80,14 @@
     font-weight: 500;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     border-left: 3px solid transparent;
+    white-space: nowrap;
+}
+
+.collapsed .navItem {
+    padding: 12px;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
 }
 
 .navItem:hover {
@@ -81,19 +105,63 @@
 .icon {
     font-size: 1.35rem;
     min-width: 24px;
+    transition: margin 0.3s ease;
+}
+
+.collapsed .icon {
+    min-width: unset;
+}
+
+.collapseToggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    width: 32px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    margin: -16px var(--spacing-md) var(--spacing-md) auto;
+    cursor: pointer;
+    color: var(--sidebar-text, #9ca3af);
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.collapseToggle:hover {
+    background: var(--color-primary);
+    color: white;
+    transform: scale(1.1);
+}
+
+.collapsed .collapseToggle {
+    margin: -16px auto var(--spacing-md) auto;
 }
 
 .footer {
     padding: var(--spacing-lg) var(--spacing-xl);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     background-color: var(--color-secondary-light, #0a0a0a);
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.collapsed .footer {
+    padding: var(--spacing-lg) var(--spacing-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
 }
 
 .user {
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
+    transition: all 0.3s ease;
+}
+
+.collapsed .user {
+    flex-direction: column;
 }
 
 .userAvatar {
@@ -179,6 +247,13 @@
 }
 
 @media (max-width: 900px) {
+    .collapsed {
+        width: 260px; /* Reset on mobile if needed, but drawer should handle it */
+    }
+
+    .collapseToggle {
+        display: none;
+    }
     .mobileToggle {
         display: flex;
     }

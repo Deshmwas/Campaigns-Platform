@@ -69,15 +69,18 @@
 .noSelection { font-size: 0.85rem; color: var(--color-gray-400); text-align: center; padding: var(--spacing-xl) 0; }
 
 @media (max-width: 1024px) {
-    .builder { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
-    .palette { border-right: none; border-bottom: 1px solid var(--color-gray-200); }
-    .blockList { flex-direction: row; flex-wrap: wrap; }
-    .properties { border-left: none; border-top: 1px solid var(--color-gray-200); }
+    .builder { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; height: 100vh; }
+    .palette { border-right: none; border-bottom: 1px solid var(--color-gray-200); position: sticky; top: 0; z-index: 10; max-height: 200px; }
+    .blockList { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; }
+    .blockBtn { flex: 0 0 auto; }
+    .properties { border-left: none; border-top: 1px solid var(--color-gray-200); max-height: 40vh; }
 }
 
 @media (max-width: 768px) {
-    .canvasHeader { flex-direction: column; align-items: stretch; gap: var(--spacing-xs); }
-    .canvasActions { width: 100%; justify-content: flex-end; }
+    .canvasHeader { flex-direction: column; align-items: stretch; gap: var(--spacing-xs); padding: var(--spacing-md); }
+    .canvasActions { width: 100%; justify-content: space-between; margin-top: 4px; }
+    .canvasActions button { flex: 1; justify-content: center; }
     .nameInput { width: 100%; }
-    .blockList { flex-wrap: nowrap; overflow-x: auto; }
+    .blockList { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .canvasBody { padding: var(--spacing-md); }
 }

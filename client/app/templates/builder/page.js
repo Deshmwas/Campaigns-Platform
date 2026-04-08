@@ -11,12 +11,13 @@ import { FaFacebookF, FaInstagram, FaLinkedinIn, FaYoutube, FaTiktok } from 'rea
 import { FaXTwitter } from 'react-icons/fa6';
 
 const SOCIAL_PLATFORMS = [
-    { name: 'Facebook', color: '#1877F2' },
-    { name: 'X', color: '#000000' },
-    { name: 'Instagram', color: '#E4405F' },
-    { name: 'LinkedIn', color: '#0A66C2' },
-    { name: 'YouTube', color: '#FF0000' },
-    { name: 'TikTok', color: '#000000' },
+    { name: 'Facebook', color: '#1877F2', icon: 'https://img.icons8.com/color/48/facebook-new.png' },
+    { name: 'X', color: '#000000', icon: 'https://img.icons8.com/color/48/twitterx--v1.png' },
+    { name: 'Instagram', color: '#E4405F', icon: 'https://img.icons8.com/color/48/instagram-new.png' },
+    { name: 'LinkedIn', color: '#0A66C2', icon: 'https://img.icons8.com/color/48/linkedin.png' },
+    { name: 'YouTube', color: '#FF0000', icon: 'https://img.icons8.com/color/48/youtube-play.png' },
+    { name: 'WhatsApp', color: '#25D366', icon: 'https://img.icons8.com/color/48/whatsapp--v1.png' },
+    { name: 'TikTok', color: '#000000', icon: 'https://img.icons8.com/color/48/tiktok.png' },
 ];
 
 function getSocialIcon(platform, size = 16) {
@@ -89,10 +90,13 @@ function generateHTML(blocks) {
                 break;
             case 'social':
                 const socialIcons = block.data.links.map(l => {
-                    const c = SOCIAL_PLATFORMS.find(p => p.name.toLowerCase() === l.platform.toLowerCase())?.color || '#6b7280';
-                    return `<a href="${l.url}" style="display:inline-block;margin:0 6px;width:36px;height:36px;border-radius:50%;background:${c};color:#fff;text-align:center;line-height:36px;font-size:14px;font-weight:700;text-decoration:none;font-family:Arial,sans-serif" title="${l.platform}">${l.platform.charAt(0).toUpperCase()}</a>`;
+                    const platform = SOCIAL_PLATFORMS.find(p => p.name.toLowerCase() === l.platform.toLowerCase());
+                    const iconUrl = platform?.icon || '';
+                    return `<a href="${l.url}" style="display:inline-block;margin:0 8px;text-decoration:none;" title="${l.platform}">
+                        <img src="${iconUrl}" alt="${l.platform}" width="32" height="32" style="display:block;border:0;" />
+                    </a>`;
                 }).join('');
-                body += `<div style="text-align:center;padding:16px 24px">${socialIcons}</div>`;
+                body += `<div style="text-align:center;padding:24px">${socialIcons}</div>`;
                 break;
             case 'footer':
                 body += `<div style="text-align:center;padding:20px 24px;font-size:12px;color:#9ca3af;font-family:Arial,sans-serif"><p style="margin:0">${block.data.text}</p><p style="margin:8px 0 0"><a href="${block.data.unsubscribeUrl}" style="color:#9ca3af;text-decoration:underline">Unsubscribe</a></p></div>`;
@@ -361,7 +365,10 @@ function generateBlockPreview(block) {
         }
         case 'button': return `<div style="text-align:${block.data.align}"><span style="display:inline-block;padding:10px 24px;background:${block.data.color};color:${block.data.textColor};border-radius:6px;font-weight:600;font-size:13px">${block.data.text}</span></div>`;
         case 'divider': return `<hr style="border:none;border-top:1px ${block.data.style} ${block.data.color}" />`;
-        case 'social': return `<div style="text-align:center;font-size:12px;color:#6b7280;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap">${block.data.links.map(l => { const c = SOCIAL_PLATFORMS.find(p=>p.name.toLowerCase()===l.platform.toLowerCase())?.color||'#6b7280'; return `<span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:${c};color:#fff;font-weight:700;font-size:12px" title="${l.platform}">${l.platform.charAt(0)}</span>`; }).join('')}</div>`;
+        case 'social': return `<div style="text-align:center;font-size:12px;color:#6b7280;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;padding:12px 0">${block.data.links.map(l => { 
+            const p = SOCIAL_PLATFORMS.find(p=>p.name.toLowerCase()===l.platform.toLowerCase());
+            return `<a href="${l.url}" style="display:inline-block;text-decoration:none;"><img src="${p?.icon}" alt="${l.platform}" style="width:32px;height:32px;display:block;" /></a>`; 
+        }).join('')}</div>`;
         case 'footer': return `<div style="text-align:center;font-size:11px;color:#9ca3af">${block.data.text}</div>`;
         default: return '';
     }
@@ -478,9 +485,11 @@ function BlockEditor({ block, onChange, onImageUpload }) {
                 <label style={labelStyle}>Social Media Links</label>
                 {block.data.links.map((link, idx) => (
                     <div key={idx} style={{display:'flex',gap:'6px',alignItems:'center',background:'#f9fafb',padding:'8px',borderRadius:'6px',border:'1px solid #e5e7eb'}}>
-                        <span style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:28,height:28,borderRadius:'50%',background:getSocialColor(link.platform),color:'#fff',fontSize:12,flexShrink:0}}>
-                            {getSocialIcon(link.platform, 14)}
-                        </span>
+                        <img 
+                            src={SOCIAL_PLATFORMS.find(p => p.name === link.platform)?.icon} 
+                            alt={link.platform}
+                            style={{ width: 24, height: 24, flexShrink: 0 }}
+                        />
                         <select style={{...inputStyle,flex:'0 0 100px'}} value={link.platform} onChange={e => {
                             const updated = [...block.data.links];
                             updated[idx] = { ...updated[idx], platform: e.target.value };

@@ -16,7 +16,9 @@ import {
     MdLogout,
     MdBarChart,
     MdMenu,
-    MdClose
+    MdClose,
+    MdChevronLeft,
+    MdChevronRight
 } from 'react-icons/md';
 import api from '../../lib/api';
 
@@ -36,6 +38,20 @@ export default function Sidebar() {
     const pathname = usePathname();
     const { user, logout } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('sidebarCollapsed') === 'true';
+        }
+        return false;
+    });
+
+    const toggleCollapse = () => {
+        const newState = !isCollapsed;
+        setIsCollapsed(newState);
+        localStorage.setItem('sidebarCollapsed', newState.toString());
+        // Trigger a custom event for DashboardLayout to respond
+        window.dispatchEvent(new CustomEvent('sidebar-toggle', { detail: newState }));
+    };
     
     const computeInitials = (name) => {
         if (!name) return 'C';
@@ -55,7 +71,7 @@ export default function Sidebar() {
                 {isOpen ? <MdClose /> : <MdMenu />}
             </button>
             <div className={`${styles.overlay} ${isOpen ? styles.overlayOpen : ''}`} onClick={() => setIsOpen(false)}></div>
-            <aside className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ''}`}>
+            <aside className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ''} ${isCollapsed ? styles.collapsed : ''}`}>
                 <div className={styles.brand}>
                     <div className={styles.logo}>
                         {user?.organization?.settings?.logoUrl ? (
@@ -68,7 +84,11 @@ export default function Sidebar() {
                             computeInitials(orgName)
                         )}
                     </div>
-                    <h1 className={styles.title}>{orgName}</h1>
+                    {!isCollapsed && <h1 className={styles.title}>{orgName}</h1>}
+                </div>
+
+                <div className={styles.collapseToggle} onClick={toggleCollapse}>
+                    {isCollapsed ? <MdChevronRight /> : <MdChevronLeft />}
                 </div>
 
                 <nav className={styles.nav}>
@@ -82,9 +102,10 @@ export default function Sidebar() {
                                 href={item.href}
                                 className={`${styles.navItem} ${isActive ? styles.active : ''}`}
                                 onClick={() => setIsOpen(false)}
+                                title={isCollapsed ? item.label : ''}
                             >
                                 <Icon className={styles.icon} />
-                                <span>{item.label}</span>
+                                {!isCollapsed && <span>{item.label}</span>}
                             </Link>
                         );
                     })}
@@ -95,14 +116,16 @@ export default function Sidebar() {
                         <div className={styles.userAvatar}>
                             {user?.firstName?.[0]}{user?.lastName?.[0]}
                         </div>
-                        <div className={styles.userInfo}>
-                            <div className={styles.userName}>
-                                {user?.firstName} {user?.lastName}
+                        {!isCollapsed && (
+                            <div className={styles.userInfo}>
+                                <div className={styles.userName}>
+                                    {user?.firstName} {user?.lastName}
+                                </div>
+                                <div className={styles.userRole}>{user?.role}</div>
                             </div>
-                            <div className={styles.userRole}>{user?.role}</div>
-                        </div>
+                        )}
                     </div>
-                    <button onClick={logout} className={styles.logoutButton}>
+                    <button onClick={logout} className={styles.logoutButton} title="Logout">
                         <MdLogout />
                     </button>
                 </div>
