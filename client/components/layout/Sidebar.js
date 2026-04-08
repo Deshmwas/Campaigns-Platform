@@ -16,9 +16,9 @@ import {
     MdLogout,
     MdBarChart,
     MdMenu,
-    MdClose,
     MdChevronLeft,
-    MdChevronRight
+    MdChevronRight,
+    MdAlternateEmail
 } from 'react-icons/md';
 import api from '../../lib/api';
 
@@ -29,7 +29,7 @@ const navItems = [
     { href: '/campaigns', label: 'Campaigns', icon: MdCampaign },
     { href: '/templates/email', label: 'Email Templates', icon: MdEmail },
     { href: '/templates/sms', label: 'SMS Templates', icon: MdSms },
-    { href: '/senders', label: 'Sender Emails', icon: MdSettings },
+    { href: '/senders', label: 'Sender Emails', icon: MdAlternateEmail },
     { href: '/reports', label: 'Reports', icon: MdBarChart },
     { href: '/settings', label: 'Settings', icon: MdSettings },
 ];
