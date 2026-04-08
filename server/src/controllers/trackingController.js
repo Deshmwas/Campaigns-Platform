@@ -4,7 +4,7 @@ export const trackOpen = async (req, res) => {
     try {
         const { recipientId } = req.params;
 
-        await prisma.campaignRecipient.updateMany({
+        const result = await prisma.campaignRecipient.updateMany({
             where: {
                 id: recipientId,
                 openedAt: null, // Only update if not already opened
@@ -14,6 +14,20 @@ export const trackOpen = async (req, res) => {
                 openedAt: new Date(),
             },
         });
+
+        if (result.count > 0) {
+            const recipient = await prisma.campaignRecipient.findUnique({
+                where: { id: recipientId },
+                select: { campaignId: true }
+            });
+            
+            if (recipient) {
+                await prisma.campaignStats.update({
+                    where: { campaignId: recipient.campaignId },
+                    data: { openedCount: { increment: 1 } }
+                }).catch(err => console.error('Failed to update stats:', err));
+            }
+        }
 
         // Return a 1x1 transparent pixel
         const pixel = Buffer.from(
@@ -48,7 +62,7 @@ export const trackClick = async (req, res) => {
         }
 
         // Update recipient status
-        await prisma.campaignRecipient.updateMany({
+        const result = await prisma.campaignRecipient.updateMany({
             where: {
                 id: recipientId,
                 clickedAt: null,
@@ -58,6 +72,20 @@ export const trackClick = async (req, res) => {
                 clickedAt: new Date(),
             },
         });
+
+        if (result.count > 0) {
+            const recipient = await prisma.campaignRecipient.findUnique({
+                where: { id: recipientId },
+                select: { campaignId: true }
+            });
+            
+            if (recipient) {
+                await prisma.campaignStats.update({
+                    where: { campaignId: recipient.campaignId },
+                    data: { clickedCount: { increment: 1 } }
+                }).catch(err => console.error('Failed to update stats:', err));
+            }
+        }
 
         // Record the click
         await prisma.linkClick.create({

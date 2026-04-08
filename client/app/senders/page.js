@@ -105,10 +105,11 @@ export default function SendersPage() {
                 </div>
 
                 <div className={styles.infoBox}>
-                    <h4>💡 Using Render or other Cloud Hosts?</h4>
+                    <h4>💡 SMTP Tips for Cloud Hosting</h4>
                     <p>
-                        Many hosting providers (like Render Free Tier) block SMTP ports (25, 465, 587). 
-                        If your SMTP test fails with a <b>Connection Timeout</b>, please use an Email API like <b>Resend</b> by setting the <code>RESEND_API_KEY</code> environment variable.
+                        Some free-tier hosting providers (e.g., Render, Railway) block outgoing SMTP ports (25, 465, 587).
+                        If your test shows a <b>Connection Timeout</b>, try upgrading to a paid plan to unblock SMTP, or test from a local/VPS environment.
+                        SMTP credentials are <b>encrypted at rest</b> for security.
                     </p>
                 </div>
 

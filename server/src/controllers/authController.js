@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../config/database.js';
 import { config } from '../config/index.js';
 import EmailEngine from '../services/EmailEngine.js';
+import { decrypt } from '../utils/crypto.js';
 
 const mapOrg = (org) => {
     if (!org) return null;
@@ -174,7 +175,7 @@ export const forgotPassword = async (req, res, next) => {
                     host: sender.smtpHost,
                     port: sender.smtpPort,
                     secure: sender.encryption === 'SSL',
-                    auth: { user: sender.smtpUsername, pass: sender.smtpPassword },
+                    auth: { user: sender.smtpUsername, pass: decrypt(sender.smtpPassword) },
                     fromName: sender.name,
                     fromEmail: sender.email,
                 };
@@ -191,7 +192,7 @@ export const forgotPassword = async (req, res, next) => {
                     host: sender.smtpHost,
                     port: sender.smtpPort,
                     secure: sender.encryption === 'SSL',
-                    auth: { user: sender.smtpUsername, pass: sender.smtpPassword },
+                    auth: { user: sender.smtpUsername, pass: decrypt(sender.smtpPassword) },
                     fromName: sender.name,
                     fromEmail: sender.email,
                 };

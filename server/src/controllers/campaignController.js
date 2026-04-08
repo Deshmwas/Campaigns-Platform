@@ -1,5 +1,6 @@
 import prisma from '../config/database.js';
 import queueService from '../services/QueueService.js';
+import { decrypt } from '../utils/crypto.js';
 
 export const getCampaigns = async (req, res, next) => {
     try {
@@ -195,7 +196,7 @@ export const sendCampaign = async (req, res, next) => {
             host: campaign.senderEmail.smtpHost,
             port: campaign.senderEmail.smtpPort,
             secure: campaign.senderEmail.encryption === 'SSL',
-            auth: { user: campaign.senderEmail.smtpUsername, pass: campaign.senderEmail.smtpPassword },
+            auth: { user: campaign.senderEmail.smtpUsername, pass: decrypt(campaign.senderEmail.smtpPassword) },
             fromName: campaign.senderEmail.name,
             fromEmail: campaign.senderEmail.email,
         } : null;
@@ -266,7 +267,7 @@ export const retryFailedCampaign = async (req, res, next) => {
             host: campaign.senderEmail.smtpHost,
             port: campaign.senderEmail.smtpPort,
             secure: campaign.senderEmail.encryption === 'SSL',
-            auth: { user: campaign.senderEmail.smtpUsername, pass: campaign.senderEmail.smtpPassword },
+            auth: { user: campaign.senderEmail.smtpUsername, pass: decrypt(campaign.senderEmail.smtpPassword) },
             fromName: campaign.senderEmail.name,
             fromEmail: campaign.senderEmail.email,
         } : null;

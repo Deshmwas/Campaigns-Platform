@@ -7,11 +7,13 @@ import Card from '../../components/Card';
 import Button from '../../components/Button';
 import api from '../../lib/api';
 import styles from './campaigns.module.css';
-import { MdAdd, MdEmail, MdSms, MdSend, MdDelete, MdVisibility } from 'react-icons/md';
+import { MdAdd, MdEmail, MdSms, MdSend, MdDelete, MdVisibility, MdRefresh } from 'react-icons/md';
 import ConfirmModal from '../../components/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 
 export default function CampaignsPage() {
     const router = useRouter();
+    const toast = useToast();
     const [campaigns, setCampaigns] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
@@ -37,6 +39,10 @@ export default function CampaignsPage() {
         setConfirmState({ isOpen: true, type: 'SEND', payload: campaignId });
     };
 
+    const confirmRetry = (campaignId, failedCount) => {
+        setConfirmState({ isOpen: true, type: 'RETRY', payload: campaignId, failedCount });
+    };
+
     const confirmDelete = (campaignId) => {
         setConfirmState({ isOpen: true, type: 'DELETE', payload: campaignId });
     };
@@ -47,18 +53,27 @@ export default function CampaignsPage() {
 
         if (type === 'SEND') {
             try {
-                await api.sendCampaign(payload);
-                alert('Campaign is being sent!');
+                const res = await api.sendCampaign(payload);
+                toast.success(res?.message || 'Campaign is being sent!');
                 loadCampaigns();
             } catch (error) {
-                alert('Failed to send campaign: ' + error.message);
+                toast.error('Failed to send campaign: ' + error.message);
+            }
+        } else if (type === 'RETRY') {
+            try {
+                const res = await api.retryFailedCampaign(payload);
+                toast.success(res?.message || 'Retrying failed recipients!');
+                loadCampaigns();
+            } catch (error) {
+                toast.error('Failed to retry: ' + error.message);
             }
         } else if (type === 'DELETE') {
             setCampaigns(prev => prev.filter(c => c.id !== payload));
             try {
                 await api.deleteCampaign(payload);
+                toast.success('Campaign deleted successfully');
             } catch (error) {
-                alert('Failed to delete campaign: ' + error.message);
+                toast.error('Failed to delete campaign: ' + error.message);
                 loadCampaigns();
             }
         }
@@ -132,6 +147,7 @@ export default function CampaignsPage() {
                                         <th>Status</th>
                                         <th>Recipients</th>
                                         <th>Sent</th>
+                                        <th>Failed</th>
                                         <th>Opened</th>
                                         <th>Date Created</th>
                                         <th>Actions</th>
@@ -161,6 +177,13 @@ export default function CampaignsPage() {
                                             </td>
                                             <td>{campaign._count?.recipients || 0}</td>
                                             <td>{campaign.stats?.sentCount || 0}</td>
+                                            <td>
+                                                {(campaign.stats?.failedCount || 0) > 0 ? (
+                                                    <span className={styles.failedCount}>{campaign.stats.failedCount}</span>
+                                                ) : (
+                                                    <span>0</span>
+                                                )}
+                                            </td>
                                             <td>{campaign.stats?.openedCount || 0}</td>
                                             <td className={styles.dateCell}>
                                                 {new Date(campaign.createdAt).toLocaleDateString()}
@@ -174,24 +197,27 @@ export default function CampaignsPage() {
                                                     >
                                                         <MdVisibility />
                                                     </button>
-                                                    {campaign.status === 'DRAFT' && (
-                                                        <button
-                                                            className={`${styles.actionBtn} ${styles.sendBtn}`}
-                                                            onClick={() => confirmSend(campaign.id)}
-                                                            title="Send Now"
-                                                        >
-                                                            <MdSend />
-                                                        </button>
-                                                    )}
-                                                    {campaign.status !== 'SENDING' && (
-                                                        <button
-                                                            className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                                                            onClick={() => confirmDelete(campaign.id)}
-                                                            title="Delete"
-                                                        >
-                                                            <MdDelete />
-                                                        </button>
-                                                    )}
+                                                    <button
+                                                        className={`${styles.actionBtn} ${styles.sendBtn}`}
+                                                        onClick={() => confirmSend(campaign.id)}
+                                                        title="Send Now"
+                                                    >
+                                                        <MdSend />
+                                                    </button>
+                                                    <button
+                                                        className={`${styles.actionBtn} ${styles.retryBtn}`}
+                                                        onClick={() => confirmRetry(campaign.id, campaign.stats?.failedCount)}
+                                                        title="Resend Failed"
+                                                    >
+                                                        <MdRefresh />
+                                                    </button>
+                                                    <button
+                                                        className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                                                        onClick={() => confirmDelete(campaign.id)}
+                                                        title="Delete"
+                                                    >
+                                                        <MdDelete />
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -204,10 +230,16 @@ export default function CampaignsPage() {
 
                 <ConfirmModal 
                     isOpen={confirmState.isOpen}
-                    title={confirmState.type === 'SEND' ? 'Send Campaign' : 'Delete Campaign'}
-                    message={confirmState.type === 'SEND' ? 'Are you sure you want to officially dispatch this campaign to all recipients?' : 'Are you sure you want to delete this campaign? This action cannot be undone and will permanently cancel any active deliveries.'}
-                    confirmText={confirmState.type === 'SEND' ? 'Send Now' : 'Delete'}
-                    variant={confirmState.type === 'SEND' ? 'primary' : 'danger'}
+                    title={confirmState.type === 'SEND' ? 'Send Campaign' : confirmState.type === 'RETRY' ? 'Resend Failed Emails' : 'Delete Campaign'}
+                    message={
+                        confirmState.type === 'SEND' 
+                            ? 'Are you sure you want to officially dispatch this campaign to all recipients?' 
+                            : confirmState.type === 'RETRY'
+                            ? `Are you sure you want to resend to the ${confirmState.failedCount || 0} failed recipient(s)? They will be re-queued for delivery.`
+                            : 'Are you sure you want to delete this campaign? This action cannot be undone and will permanently cancel any active deliveries.'
+                    }
+                    confirmText={confirmState.type === 'SEND' ? 'Send Now' : confirmState.type === 'RETRY' ? 'Resend Now' : 'Delete'}
+                    variant={confirmState.type === 'DELETE' ? 'danger' : 'primary'}
                     onConfirm={handleConfirmAction}
                     onCancel={() => setConfirmState({ isOpen: false, type: null, payload: null })}
                 />

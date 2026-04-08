@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
@@ -14,6 +15,8 @@ import {
     MdSettings,
     MdLogout,
     MdBarChart,
+    MdMenu,
+    MdClose
 } from 'react-icons/md';
 import api from '../../lib/api';
 
@@ -32,67 +35,78 @@ const navItems = [
 export default function Sidebar() {
     const pathname = usePathname();
     const { user, logout } = useAuth();
+    const [isOpen, setIsOpen] = useState(false);
+    
     const computeInitials = (name) => {
         if (!name) return 'C';
         return name.trim().split(/\s+/).slice(0, 3).map(w => w[0].toUpperCase()).join('');
     };
+    
     const resolveLogo = (url) => {
         if (!url) return null;
         return url.startsWith('http') ? url : api.ensureAbsoluteUrl(url);
     };
+    
     const orgName = user?.organization?.name || 'Campaigns';
 
     return (
-        <aside className={styles.sidebar}>
-            <div className={styles.brand}>
-                <div className={styles.logo}>
-                    {user?.organization?.settings?.logoUrl ? (
-                        <img 
-                            src={resolveLogo(user.organization.settings.logoUrl)} 
-                            alt="Logo" 
-                            style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
-                        />
-                    ) : (
-                        computeInitials(orgName)
-                    )}
-                </div>
-                <h1 className={styles.title}>{orgName}</h1>
-            </div>
-
-            <nav className={styles.nav}>
-                {navItems.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-
-                    return (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            className={`${styles.navItem} ${isActive ? styles.active : ''}`}
-                        >
-                            <Icon className={styles.icon} />
-                            <span>{item.label}</span>
-                        </Link>
-                    );
-                })}
-            </nav>
-
-            <div className={styles.footer}>
-                <div className={styles.user}>
-                    <div className={styles.userAvatar}>
-                        {user?.firstName?.[0]}{user?.lastName?.[0]}
+        <>
+            <button className={styles.mobileToggle} onClick={() => setIsOpen(!isOpen)}>
+                {isOpen ? <MdClose /> : <MdMenu />}
+            </button>
+            <div className={`${styles.overlay} ${isOpen ? styles.overlayOpen : ''}`} onClick={() => setIsOpen(false)}></div>
+            <aside className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ''}`}>
+                <div className={styles.brand}>
+                    <div className={styles.logo}>
+                        {user?.organization?.settings?.logoUrl ? (
+                            <img 
+                                src={resolveLogo(user.organization.settings.logoUrl)} 
+                                alt="Logo" 
+                                style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+                            />
+                        ) : (
+                            computeInitials(orgName)
+                        )}
                     </div>
-                    <div className={styles.userInfo}>
-                        <div className={styles.userName}>
-                            {user?.firstName} {user?.lastName}
+                    <h1 className={styles.title}>{orgName}</h1>
+                </div>
+
+                <nav className={styles.nav}>
+                    {navItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={`${styles.navItem} ${isActive ? styles.active : ''}`}
+                                onClick={() => setIsOpen(false)}
+                            >
+                                <Icon className={styles.icon} />
+                                <span>{item.label}</span>
+                            </Link>
+                        );
+                    })}
+                </nav>
+
+                <div className={styles.footer}>
+                    <div className={styles.user}>
+                        <div className={styles.userAvatar}>
+                            {user?.firstName?.[0]}{user?.lastName?.[0]}
                         </div>
-                        <div className={styles.userRole}>{user?.role}</div>
+                        <div className={styles.userInfo}>
+                            <div className={styles.userName}>
+                                {user?.firstName} {user?.lastName}
+                            </div>
+                            <div className={styles.userRole}>{user?.role}</div>
+                        </div>
                     </div>
+                    <button onClick={logout} className={styles.logoutButton}>
+                        <MdLogout />
+                    </button>
                 </div>
-                <button onClick={logout} className={styles.logoutButton}>
-                    <MdLogout />
-                </button>
-            </div>
-        </aside>
+            </aside>
+        </>
     );
 }

@@ -9,10 +9,12 @@ import api from '../../../lib/api';
 import styles from './detail.module.css';
 import { MdArrowBack, MdSend, MdDelete, MdEmail, MdSms } from 'react-icons/md';
 import ConfirmModal from '../../../components/ConfirmModal';
+import { useToast } from '../../../context/ToastContext';
 
 export default function CampaignDetailPage() {
     const { id } = useParams();
     const router = useRouter();
+    const toast = useToast();
     const [campaign, setCampaign] = useState(null);
     const [loading, setLoading] = useState(true);
     const [confirmState, setConfirmState] = useState({ isOpen: false, type: null });
@@ -42,26 +44,27 @@ export default function CampaignDetailPage() {
 
         if (type === 'SEND') {
             try {
-                await api.sendCampaign(id);
-                alert('Campaign is being sent!');
+                const res = await api.sendCampaign(id);
+                toast.success(res?.message || 'Campaign is being sent!');
                 loadCampaign();
             } catch (error) {
-                alert('Failed to send campaign: ' + error.message);
+                toast.error('Failed to send campaign: ' + error.message);
             }
         } else if (type === 'RETRY') {
             try {
-                await api.retryFailedCampaign(id);
-                alert('Retrying failed recipients!');
+                const res = await api.retryFailedCampaign(id);
+                toast.success(res?.message || 'Retrying failed recipients!');
                 loadCampaign();
             } catch (error) {
-                alert('Failed to retry campaign: ' + error.message);
+                toast.error('Failed to retry campaign: ' + error.message);
             }
         } else if (type === 'DELETE') {
             try {
                 await api.deleteCampaign(id);
+                toast.success('Campaign deleted successfully');
                 router.push('/campaigns');
             } catch (error) {
-                alert('Failed to delete campaign: ' + error.message);
+                toast.error('Failed to delete campaign: ' + error.message);
             }
         }
     };
@@ -111,21 +114,15 @@ export default function CampaignDetailPage() {
                         <p className={styles.date}>Created: {new Date(campaign.createdAt).toLocaleDateString()}</p>
                     </div>
                     <div className={styles.actions}>
-                        {campaign.status === 'DRAFT' && (
-                            <Button onClick={confirmSend}>
-                                <MdSend /> Send Now
-                            </Button>
-                        )}
-                        {campaign.status !== 'SENDING' && stats.failedCount > 0 && (
-                            <Button variant="outline" onClick={confirmRetry} className={styles.retryBtn}>
-                                <MdSend /> Retry Failed
-                            </Button>
-                        )}
-                        {campaign.status !== 'SENDING' && (
-                            <Button variant="outline" onClick={confirmDelete}>
-                                <MdDelete /> Delete
-                            </Button>
-                        )}
+                        <Button onClick={confirmSend}>
+                            <MdSend /> Send Now
+                        </Button>
+                        <Button variant="outline" onClick={confirmRetry} className={styles.retryBtn}>
+                            <MdSend /> Retry Failed
+                        </Button>
+                        <Button variant="outline" onClick={confirmDelete}>
+                            <MdDelete /> Delete
+                        </Button>
                     </div>
                 </div>
 
