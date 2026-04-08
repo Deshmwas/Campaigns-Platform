@@ -36,12 +36,14 @@ class QueueService {
     }
 
     async processPendingJobs() {
+        const takeAmount = process.env.VERCEL ? 100 : this.concurrentJobs;
+        
         const jobs = await prisma.jobQueue.findMany({
             where: {
                 status: 'PENDING',
                 scheduledAt: { lte: new Date() },
             },
-            take: this.concurrentJobs,
+            take: takeAmount,
             orderBy: { scheduledAt: 'asc' },
         });
 

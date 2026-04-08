@@ -233,6 +233,11 @@ export const sendCampaign = async (req, res, next) => {
             }
         }
 
+        if (process.env.VERCEL) {
+            console.log('⚡ Vercel Detected: Synchronously processing up to 50 jobs before responding.');
+            await queueService.processPendingJobs();
+        }
+
         res.json({ message: 'Campaign queued for sending', recipients: campaign.recipients.length });
     } catch (error) {
         next(error);
@@ -307,6 +312,11 @@ export const retryFailedCampaign = async (req, res, next) => {
                     },
                 });
             }
+        }
+
+        if (process.env.VERCEL) {
+            console.log('⚡ Vercel Detected: Synchronously processing jobs before responding.');
+            await queueService.processPendingJobs();
         }
 
         res.json({ message: `Retrying ${campaign.recipients.length} failed messages`, count: campaign.recipients.length });

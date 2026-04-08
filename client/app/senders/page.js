@@ -188,12 +188,42 @@ export default function SendersPage() {
 
                                 <div className={styles.formRow}>
                                     <Input label="Sender Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required placeholder="Marketing Team" />
-                                    <Input label="Sender Email" type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} required placeholder="marketing@company.com" />
+                                    <Input 
+                                        label="Sender Email" 
+                                        type="email" 
+                                        value={form.email} 
+                                        onChange={e => {
+                                            const val = e.target.value;
+                                            setForm(prev => ({
+                                                ...prev, 
+                                                email: val,
+                                                smtpUsername: prev.email === prev.smtpUsername ? val : prev.smtpUsername
+                                            }));
+                                        }} 
+                                        required 
+                                        placeholder="marketing@company.com" 
+                                    />
                                 </div>
 
                                 <div className={styles.formRow}>
-                                    <Input label="SMTP Username" value={form.smtpUsername} onChange={e => setForm({...form, smtpUsername: e.target.value})} required placeholder="user@gmail.com" />
-                                    <Input label="SMTP Password" type="password" toggleVisibility value={form.smtpPassword} onChange={e => setForm({...form, smtpPassword: e.target.value})} required={!editing} placeholder={editing ? '(unchanged)' : 'App password'} />
+                                    <Input 
+                                        label="SMTP Username" 
+                                        value={form.smtpUsername} 
+                                        onChange={e => setForm({...form, smtpUsername: e.target.value})} 
+                                        required 
+                                        placeholder="user@gmail.com" 
+                                        autoComplete="new-password"
+                                    />
+                                    <Input 
+                                        label="SMTP Password" 
+                                        type="password" 
+                                        toggleVisibility 
+                                        value={form.smtpPassword} 
+                                        onChange={e => setForm({...form, smtpPassword: e.target.value})} 
+                                        required={!editing} 
+                                        placeholder={editing ? '(Leave blank to keep unchanged)' : 'App password'} 
+                                        autoComplete="new-password"
+                                    />
                                 </div>
 
                                 <div className={styles.advancedToggle} onClick={() => setShowAdvanced(!showAdvanced)}>
