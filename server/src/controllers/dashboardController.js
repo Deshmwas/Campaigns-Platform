@@ -92,8 +92,8 @@ export const getDashboard = async (req, res, next) => {
             : 0;
 
         const clickRate = aggregateStats.totalOpened > 0
-            ? ((aggregateStats.totalClicked / aggregateStats.totalOpened) * 100).toFixed(2)
-            : 0;
+            ? ((aggregateStats.totalClicked / aggregateStats.totalOpened) * 100).toFixed(1)
+            : '0.0';
 
         res.json({
             overview: {

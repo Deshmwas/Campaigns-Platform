@@ -49,8 +49,8 @@ export function buildAnalyticsSnapshot(campaigns = []) {
 
     return {
         totals,
-        openRate: ((totals.totalOpened / sentDenominator) * 100).toFixed(1),
-        clickRate: ((totals.totalClicked / sentDenominator) * 100).toFixed(1),
+        openRate: totals.totalSent > 0 ? ((totals.totalOpened / totals.totalSent) * 100).toFixed(1) : '0.0',
+        clickRate: totals.totalOpened > 0 ? ((totals.totalClicked / totals.totalOpened) * 100).toFixed(1) : '0.0',
         failRate: totalAttempts > 0 ? ((totals.totalFailed / sentDenominator) * 100).toFixed(1) : '0',
         unsubRate: totals.totalDelivered > 0 ? ((totals.totalUnsubscribed / totals.totalDelivered) * 100).toFixed(1) : '0',
         deliveryRate: totals.totalSent > 0 ? ((totals.totalDelivered / totals.totalSent) * 100).toFixed(1) : '0',

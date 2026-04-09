@@ -1,6 +1,7 @@
 import prisma from '../config/database.js';
 import emailEngine from './EmailEngine.js';
 import smsEngine from './SmsEngine.js';
+import statsService from './StatsService.js';
 
 class QueueService {
     constructor() {
@@ -159,7 +160,7 @@ class QueueService {
                     },
                 });
 
-                await this.updateCampaignStats(job.payload.campaignId);
+                await statsService.updateStats(job.payload.campaignId);
             }
         }
     }
@@ -186,7 +187,7 @@ class QueueService {
             },
         });
 
-        await this.updateCampaignStats(campaignId);
+        await statsService.updateStats(campaignId);
 
         return result;
     }
@@ -229,81 +230,11 @@ class QueueService {
             },
         });
 
-        await this.updateCampaignStats(campaignId);
+        await statsService.updateStats(campaignId);
 
         return result;
     }
 
-    async updateCampaignStats(campaignId) {
-        const stats = await prisma.campaignRecipient.groupBy({
-            by: ['status'],
-            where: { campaignId },
-            _count: { status: true },
-        });
-
-        const statsObj = {
-            sentCount: 0,
-            deliveredCount: 0,
-            openedCount: 0,
-            clickedCount: 0,
-            failedCount: 0,
-            unsubscribedCount: 0,
-        };
-
-        stats.forEach(stat => {
-            switch (stat.status) {
-                case 'SENT':
-                case 'DELIVERED':
-                    statsObj.sentCount += stat._count.status;
-                    if (stat.status === 'DELIVERED') statsObj.deliveredCount += stat._count.status;
-                    break;
-                case 'OPENED':
-                    statsObj.sentCount += stat._count.status;
-                    statsObj.deliveredCount += stat._count.status;
-                    statsObj.openedCount += stat._count.status;
-                    break;
-                case 'CLICKED':
-                    statsObj.sentCount += stat._count.status;
-                    statsObj.deliveredCount += stat._count.status;
-                    statsObj.openedCount += stat._count.status;
-                    statsObj.clickedCount += stat._count.status;
-                    break;
-                case 'FAILED':
-                    statsObj.failedCount += stat._count.status;
-                    break;
-                case 'UNSUBSCRIBED':
-                    statsObj.unsubscribedCount += stat._count.status;
-                    break;
-            }
-        });
-
-        const totalRecipients = await prisma.campaignRecipient.count({ where: { campaignId } });
-
-        await prisma.campaignStats.upsert({
-            where: { campaignId },
-            create: {
-                campaignId,
-                totalRecipients,
-                ...statsObj,
-            },
-            update: statsObj,
-        });
-
-        const totalProcessed = stats.reduce((sum, s) => {
-            if (['SENT', 'DELIVERED', 'OPENED', 'CLICKED', 'FAILED', 'UNSUBSCRIBED', 'BOUNCED'].includes(s.status)) {
-                return sum + s._count.status;
-            }
-            return sum;
-        }, 0);
-
-        if (totalProcessed === totalRecipients && totalRecipients > 0) {
-            const allFailed = statsObj.failedCount === totalRecipients;
-            await prisma.campaign.updateMany({
-                where: { id: campaignId, status: 'SENDING' },
-                data: { status: allFailed ? 'FAILED' : 'SENT' },
-            });
-        }
-    }
 
     async enqueueJob({ type, payload, scheduledAt = new Date() }) {
         return prisma.jobQueue.create({

@@ -1,33 +1,12 @@
 import prisma from '../config/database.js';
+import statsService from '../services/StatsService.js';
 
 export const trackOpen = async (req, res) => {
     try {
         const { recipientId } = req.params;
+        console.log(`[Tracking] Email opened by recipient: ${recipientId}`);
 
-        const result = await prisma.campaignRecipient.updateMany({
-            where: {
-                id: recipientId,
-                openedAt: null, // Only update if not already opened
-            },
-            data: {
-                status: 'OPENED',
-                openedAt: new Date(),
-            },
-        });
-
-        if (result.count > 0) {
-            const recipient = await prisma.campaignRecipient.findUnique({
-                where: { id: recipientId },
-                select: { campaignId: true }
-            });
-            
-            if (recipient) {
-                await prisma.campaignStats.update({
-                    where: { campaignId: recipient.campaignId },
-                    data: { openedCount: { increment: 1 } }
-                }).catch(err => console.error('Failed to update stats:', err));
-            }
-        }
+        await statsService.recordInteraction(recipientId, 'OPEN');
 
         // Return a 1x1 transparent pixel
         const pixel = Buffer.from(
@@ -42,11 +21,9 @@ export const trackOpen = async (req, res) => {
         });
         res.end(pixel);
     } catch (error) {
-        // Return pixel anyway, don't expose errors
-        const pixel = Buffer.from(
-            'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
-            'base64'
-        );
+        console.error('[Tracking] Open tracking error:', error);
+        // Return pixel anyway
+        const pixel = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
         res.writeHead(200, { 'Content-Type': 'image/gif' });
         res.end(pixel);
     }
@@ -64,39 +41,13 @@ export const trackClick = async (req, res) => {
     try {
         console.log(`[Tracking] User clicked link: ${url} (Recipient: ${recipientId})`);
 
-        // Update recipient click tracking status
-        // We use updateMany with clickedAt: null to avoid double counting if the user clicks multiple times
-        const updateResult = await prisma.campaignRecipient.updateMany({
-            where: {
-                id: recipientId,
-                clickedAt: null,
-            },
-            data: {
-                status: 'CLICKED',
-                clickedAt: new Date(),
-            },
-        });
+        await statsService.recordInteraction(recipientId, 'CLICK');
 
-        // If this is the first click, increment the campaign stats
-        if (updateResult.count > 0) {
-            const recipient = await prisma.campaignRecipient.findUnique({
-                where: { id: recipientId },
-                select: { campaignId: true }
-            });
-            
-            if (recipient) {
-                await prisma.campaignStats.update({
-                    where: { campaignId: recipient.campaignId },
-                    data: { clickedCount: { increment: 1 } }
-                }).catch(err => console.error('[Tracking] Failed to update stats:', err));
-            }
-        }
-
-        // Always record the specific link click event
+        // Always record the specific link click event record for detailed reports
         await prisma.linkClick.create({
             data: {
                 recipientId,
-                url: url, // Use raw url from Express, it's already decoded and safe
+                url: url,
             },
         }).catch(err => console.error('[Tracking] Failed to record click event:', err));
 
@@ -104,11 +55,7 @@ export const trackClick = async (req, res) => {
         return res.status(302).redirect(url);
     } catch (error) {
         console.error('[Tracking] Critical click processing error:', error);
-        
-        // Final fallback: Still try to redirect if we have a URL
-        if (url) {
-            return res.status(302).redirect(url);
-        }
+        if (url) return res.status(302).redirect(url);
         res.status(400).send('Tracking error');
     }
 };
