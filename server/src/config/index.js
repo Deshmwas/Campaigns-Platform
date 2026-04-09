@@ -34,7 +34,7 @@ export const config = {
   },
 
   tracking: {
-    domain: process.env.TRACKING_DOMAIN || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5000',
+    domain: (process.env.TRACKING_DOMAIN || process.env.API_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5000').replace(/\/$/, ''),
   },
 
   rateLimits: {

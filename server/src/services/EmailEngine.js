@@ -294,12 +294,18 @@ class EmailEngine {
     addTracking(html, recipientId) {
         if (!html || !recipientId) return html;
         const trackingPixel = `<img src="${config.tracking.domain}/api/track/open/${recipientId}" width="1" height="1" alt="" style="display:block;" />`;
+        
         const trackedHtml = html.replace(
-            /<a\s+([^>]*href=["']([^"']+)["'][^>]*)>/gi,
-            (match, attrs, url) => {
-                if (url.startsWith('mailto:') || url.startsWith('#')) return match;
+            /<a\s+([^>]*?)\s*href=["']([^"']*)["']([^>]*)>/gi,
+            (match, prefix, url, suffix) => {
+                // Ignore special links
+                if (!url || url.startsWith('mailto:') || url.startsWith('#') || url.startsWith('tel:') || url.startsWith('sms:')) {
+                    return match;
+                }
+                
                 const trackedUrl = `${config.tracking.domain}/api/track/click/${recipientId}?url=${encodeURIComponent(url)}`;
-                return `<a ${attrs.replace(url, trackedUrl)}>`;
+                const p = prefix ? `${prefix} ` : '';
+                return `<a ${p}href="${trackedUrl}"${suffix}>`;
             }
         );
         return trackedHtml + trackingPixel;
