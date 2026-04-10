@@ -8,6 +8,8 @@ export function buildAnalyticsSnapshot(campaigns = []) {
             acc.totalClicked += stats.clickedCount || 0;
             acc.totalFailed += stats.failedCount || 0;
             acc.totalUnsubscribed += stats.unsubscribedCount || 0;
+            acc.totalSpam += stats.spamCount || 0;
+            acc.totalForwarded += stats.forwardedCount || 0;
             acc.totalRecipients += stats.totalRecipients || 0;
             acc.totalCampaigns += 1;
             acc.sentCampaigns += c.status === 'SENT' ? 1 : 0;
@@ -23,6 +25,8 @@ export function buildAnalyticsSnapshot(campaigns = []) {
             totalClicked: 0,
             totalFailed: 0,
             totalUnsubscribed: 0,
+            totalSpam: 0,
+            totalForwarded: 0,
             totalRecipients: 0,
             totalCampaigns: 0,
             sentCampaigns: 0,
@@ -42,6 +46,9 @@ export function buildAnalyticsSnapshot(campaigns = []) {
         opened: c.stats?.openedCount || 0,
         clicked: c.stats?.clickedCount || 0,
         failed: c.stats?.failedCount || 0,
+        unopened: Math.max(0, (c.stats?.sentCount || 0) - (c.stats?.openedCount || 0)),
+        spam: c.stats?.spamCount || 0,
+        forwarded: c.stats?.forwardedCount || 0,
     }));
 
     const totalAttempts = totals.totalSent + totals.totalFailed;
@@ -54,6 +61,7 @@ export function buildAnalyticsSnapshot(campaigns = []) {
         failRate: totalAttempts > 0 ? ((totals.totalFailed / sentDenominator) * 100).toFixed(1) : '0',
         unsubRate: totals.totalDelivered > 0 ? ((totals.totalUnsubscribed / totals.totalDelivered) * 100).toFixed(1) : '0',
         deliveryRate: totals.totalSent > 0 ? ((totals.totalDelivered / totals.totalSent) * 100).toFixed(1) : '0',
+        totalUnopened: Math.max(0, totals.totalSent - totals.totalOpened),
         campaignTypes: [
             { name: 'Email', value: emailCampaigns.length || 0 },
             { name: 'SMS', value: smsCampaigns.length || 0 },

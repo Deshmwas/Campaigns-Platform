@@ -22,6 +22,8 @@ class StatsService {
                 clickedCount: 0,
                 failedCount: 0,
                 unsubscribedCount: 0,
+                spamCount: 0,
+                forwardedCount: 0,
             };
 
             stats.forEach(stat => {
@@ -48,6 +50,12 @@ class StatsService {
                     case 'UNSUBSCRIBED':
                         statsObj.unsubscribedCount += stat._count.status;
                         break;
+                    case 'SPAM':
+                        statsObj.spamCount += stat._count.status;
+                        break;
+                    case 'FORWARDED':
+                        statsObj.forwardedCount += stat._count.status;
+                        break;
                 }
             });
 
@@ -67,7 +75,7 @@ class StatsService {
 
             // Update campaign status if all recipients are processed
             const totalProcessed = stats.reduce((sum, s) => {
-                if (['SENT', 'DELIVERED', 'OPENED', 'CLICKED', 'FAILED', 'UNSUBSCRIBED'].includes(s.status)) {
+                if (['SENT', 'DELIVERED', 'OPENED', 'CLICKED', 'FAILED', 'UNSUBSCRIBED', 'SPAM', 'FORWARDED'].includes(s.status)) {
                     return sum + s._count.status;
                 }
                 return sum;
@@ -120,6 +128,18 @@ class StatsService {
                     if (!recipient.openedAt) {
                         updates.openedAt = now;
                     }
+                }
+            } else if (type === 'SPAM') {
+                if (!recipient.spamAt) {
+                    updates.spamAt = now;
+                    updates.status = 'SPAM';
+                    statusChanged = true;
+                }
+            } else if (type === 'FORWARD') {
+                if (!recipient.forwardedAt) {
+                    updates.forwardedAt = now;
+                    updates.status = 'FORWARDED';
+                    statusChanged = true;
                 }
             }
 

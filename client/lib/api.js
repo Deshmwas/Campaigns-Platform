@@ -187,6 +187,11 @@ class ApiClient {
         return this.request(`/api/dashboard/analytics?${query}`);
     }
 
+    async getRecipientActivity(params = {}) {
+        const query = new URLSearchParams(params).toString();
+        return this.request(`/api/dashboard/recipient-activity?${query}`);
+    }
+
     // Campaigns
     async getCampaigns(params = {}) {
         const query = new URLSearchParams(params).toString();

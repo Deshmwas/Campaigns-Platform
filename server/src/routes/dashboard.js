@@ -8,5 +8,6 @@ router.use(authenticate);
 
 router.get('/', dashboardController.getDashboard);
 router.get('/analytics', dashboardController.getAnalytics);
+router.get('/recipient-activity', dashboardController.getRecipientActivity);
 
 export default router;

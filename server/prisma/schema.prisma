@@ -190,6 +190,8 @@ model CampaignRecipient {
   openedAt    DateTime?
   clickedAt   DateTime?
   failedAt    DateTime?
+  spamAt      DateTime?
+  forwardedAt DateTime?
   errorMessage String?
   createdAt   DateTime @default(now())
 
@@ -212,6 +214,8 @@ enum RecipientStatus {
   CLICKED
   FAILED
   UNSUBSCRIBED
+  SPAM
+  FORWARDED
 }
 
 model CampaignStats {
@@ -224,6 +228,8 @@ model CampaignStats {
   clickedCount    Int      @default(0)
   failedCount     Int      @default(0)
   unsubscribedCount Int    @default(0)
+  spamCount       Int      @default(0)
+  forwardedCount  Int      @default(0)
   updatedAt       DateTime @updatedAt
 
   campaign        Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
