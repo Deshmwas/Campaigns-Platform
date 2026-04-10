@@ -31,6 +31,7 @@ export default function CampaignDetailReport() {
     const [recipients, setRecipients] = useState([]);
     const [recPagination, setRecPagination] = useState({ page: 1, totalPages: 1 });
     const [loadingRecipients, setLoadingRecipients] = useState(false);
+    const [subFilter, setSubFilter] = useState('all'); // for bounces vs auto-replies
 
     useEffect(() => {
         loadReport();
@@ -39,6 +40,8 @@ export default function CampaignDetailReport() {
     useEffect(() => {
         if (activeTab === 'recipients') {
             loadRecipients(1);
+        } else if (activeTab === 'bounces') {
+            loadRecipients(1, 'bounces');
         }
     }, [activeTab, id]);
 
@@ -58,10 +61,14 @@ export default function CampaignDetailReport() {
         }
     };
 
-    const loadRecipients = async (page = 1) => {
+    const loadRecipients = async (page = 1, status = null) => {
         setLoadingRecipients(true);
         try {
-            const response = await fetch(`${api.baseUrl}/api/reports/campaign/${id}/recipients?page=${page}`, {
+            const endpoint = status 
+                ? `${api.baseUrl}/api/reports/campaign/${id}/recipients?page=${page}&status=${status}`
+                : `${api.baseUrl}/api/reports/campaign/${id}/recipients?page=${page}`;
+                
+            const response = await fetch(endpoint, {
                 headers: {
                     'Authorization': `Bearer ${api.getToken()}`
                 }
@@ -119,12 +126,11 @@ export default function CampaignDetailReport() {
                         Recipient Activities
                     </button>
                     <button 
-                        className={`${styles.tab} ${activeTab === 'clicks' ? styles.activeTab : ''}`}
-                        onClick={() => setActiveTab('clicks')}
+                        className={`${styles.tab} ${activeTab === 'bounces' ? styles.activeTab : ''}`}
+                        onClick={() => setActiveTab('bounces')}
                     >
-                        Click Activities <MdKeyboardArrowDown />
+                        Bounces and Auto-replies
                     </button>
-                    <button className={styles.tab}>Bounces and Auto-replies</button>
                     <button className={styles.tab}><MdMoreVert /></button>
                 </div>
 
@@ -437,6 +443,94 @@ export default function CampaignDetailReport() {
                                 <button 
                                     disabled={recPagination.page === recPagination.totalPages}
                                     onClick={() => loadRecipients(recPagination.page + 1)}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
+                    </Card>
+                )}
+
+                {activeTab === 'bounces' && (
+                    <Card noPadding>
+                        <div className={styles.subMetricsBar}>
+                            <div 
+                                className={`${styles.subMetricItem} ${subFilter === 'bounces' || subFilter === 'all' ? styles.activeSubMetric : ''}`}
+                                onClick={() => setSubFilter('bounces')}
+                            >
+                                <div className={styles.subMetricValue}>{(metrics.bounced || 0) + (metrics.failed || 0)}</div>
+                                <div className={styles.subMetricLabel}>Hard Bounce</div>
+                            </div>
+                            <div 
+                                className={`${styles.subMetricItem} ${subFilter === 'replies' ? styles.activeSubMetric : ''}`}
+                                onClick={() => setSubFilter('replies')}
+                            >
+                                <div className={styles.subMetricValue}>{metrics.replies || 0}</div>
+                                <div className={styles.subMetricLabel}>Auto Reply</div>
+                            </div>
+                        </div>
+
+                        <div className={styles.tableToolbar}>
+                            <MdFileDownload className={styles.filterIcon} />
+                            <div style={{ flex: 1 }}></div>
+                            <MdSearch className={styles.searchIcon} />
+                            <div className={styles.tableActions}>
+                                <MdFilterList />
+                            </div>
+                        </div>
+
+                        <div className={styles.tableContainer}>
+                            <table className={styles.table}>
+                                <thead>
+                                    <tr>
+                                        <th>Contact Email</th>
+                                        <th>Bounce reason</th>
+                                        <th>First Name</th>
+                                        <th>Last Name</th>
+                                        <th>Company Name</th>
+                                        <th>Phone</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {loadingRecipients ? (
+                                        <tr><td colSpan="6" className={styles.tableLoading}>Loading records...</td></tr>
+                                    ) : recipients.length === 0 ? (
+                                        <tr><td colSpan="6" className={styles.tableEmpty}>No records found</td></tr>
+                                    ) : (
+                                        recipients
+                                        .filter(r => {
+                                            if (subFilter === 'bounces') return r.status === 'BOUNCED' || r.status === 'FAILED';
+                                            if (subFilter === 'replies') return r.isAutoReply === true;
+                                            return true;
+                                        })
+                                        .map(r => (
+                                            <tr key={r.id}>
+                                                <td className={styles.emailCell}>{r.contact.email}</td>
+                                                <td><span className={styles.bounceReasonText}>{r.bounceReason || '-'}</span></td>
+                                                <td>{r.contact.firstName || '-'}</td>
+                                                <td>{r.contact.lastName || '-'}</td>
+                                                <td>{r.contact.companyName}</td>
+                                                <td>{r.contact.phone || '-'}</td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                        {recPagination.totalPages > 1 && (
+                            <div className={styles.pagination}>
+                                <button 
+                                    className={styles.pBtn}
+                                    disabled={recPagination.page === 1}
+                                    onClick={() => loadRecipients(recPagination.page - 1, 'bounces')}
+                                >
+                                    Previous
+                                </button>
+                                <span>Page {recPagination.page} of {recPagination.totalPages}</span>
+                                <button 
+                                    className={styles.pBtn}
+                                    disabled={recPagination.page === recPagination.totalPages}
+                                    onClick={() => loadRecipients(recPagination.page + 1, 'bounces')}
                                 >
                                     Next
                                 </button>

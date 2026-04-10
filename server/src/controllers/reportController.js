@@ -112,14 +112,26 @@ export const getCampaignRecipients = async (req, res, next) => {
         const { page = 1, limit = 20, status } = req.query;
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
-        const where = { campaignId: id };
-        if (status) where.status = status;
+        let where = { campaignId: id };
+        
+        if (status === 'bounces') {
+            where.OR = [
+                { status: 'BOUNCED' },
+                { status: 'FAILED' }
+            ];
+        } else if (status) {
+            where.status = status;
+        }
 
         const [recipients, total] = await Promise.all([
             prisma.campaignRecipient.findMany({
                 where,
                 include: { 
-                    contact: true 
+                    contact: true,
+                    interactions: {
+                        where: { type: 'REPLY' },
+                        take: 1
+                    }
                 },
                 orderBy: { createdAt: 'desc' },
                 skip,
@@ -135,6 +147,8 @@ export const getCampaignRecipients = async (req, res, next) => {
                 sentAt: r.sentAt,
                 openedAt: r.openedAt,
                 clickedAt: r.clickedAt,
+                bounceReason: r.errorMessage || (r.status === 'BOUNCED' ? 'General bounce' : null),
+                isAutoReply: r.interactions.length > 0,
                 contact: {
                     email: r.contact.email,
                     firstName: r.contact.firstName,
