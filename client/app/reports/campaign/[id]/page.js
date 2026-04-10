@@ -13,7 +13,7 @@ import {
 } from 'recharts';
 import { 
     MdFilterList, MdMoreVert, MdInfoOutline, MdSearch,
-    MdFileDownload, MdFormatListBulleted
+    MdFileDownload, MdFormatListBulleted, MdKeyboardArrowDown
 } from 'react-icons/md';
 
 const COLORS = {
@@ -178,16 +178,26 @@ export default function CampaignDetailReport() {
                                         <ResponsiveContainer width="100%" height={180}>
                                             <PieChart>
                                                 <Pie
+                                                    data={[{ value: 100 }]}
+                                                    innerRadius={65}
+                                                    outerRadius={75}
+                                                    stroke="none"
+                                                    dataKey="value"
+                                                    fill="#f1f5f9"
+                                                    isAnimationActive={false}
+                                                />
+                                                <Pie
                                                     data={charts.engagement}
                                                     innerRadius={60}
                                                     outerRadius={80}
+                                                    cornerRadius={10}
                                                     stroke="none"
                                                     dataKey="value"
                                                     startAngle={90}
                                                     endAngle={450}
                                                 >
                                                     <Cell fill="#10b981" />
-                                                    <Cell fill="#f1f5f9" />
+                                                    <Cell fill="transparent" />
                                                 </Pie>
                                             </PieChart>
                                         </ResponsiveContainer>
@@ -228,16 +238,26 @@ export default function CampaignDetailReport() {
                                         <ResponsiveContainer width="100%" height={180}>
                                             <PieChart>
                                                 <Pie
+                                                    data={[{ value: 100 }]}
+                                                    innerRadius={65}
+                                                    outerRadius={75}
+                                                    stroke="none"
+                                                    dataKey="value"
+                                                    fill="#f1f5f9"
+                                                    isAnimationActive={false}
+                                                />
+                                                <Pie
                                                     data={charts.clicks}
                                                     innerRadius={60}
                                                     outerRadius={80}
+                                                    cornerRadius={10}
                                                     stroke="none"
                                                     dataKey="value"
                                                     startAngle={90}
                                                     endAngle={450}
                                                 >
                                                     <Cell fill="#3b82f6" />
-                                                    <Cell fill="#f1f5f9" />
+                                                    <Cell fill="transparent" />
                                                 </Pie>
                                             </PieChart>
                                         </ResponsiveContainer>
@@ -280,16 +300,26 @@ export default function CampaignDetailReport() {
                                         <ResponsiveContainer width="100%" height={180}>
                                             <PieChart>
                                                 <Pie
+                                                    data={[{ value: 100 }]}
+                                                    innerRadius={65}
+                                                    outerRadius={75}
+                                                    stroke="none"
+                                                    dataKey="value"
+                                                    fill="#f1f5f9"
+                                                    isAnimationActive={false}
+                                                />
+                                                <Pie
                                                     data={[{value: metrics.replies}, {value: Math.max(0, metrics.delivered - metrics.replies)}]}
                                                     innerRadius={60}
                                                     outerRadius={80}
+                                                    cornerRadius={10}
                                                     stroke="none"
                                                     dataKey="value"
                                                     startAngle={90}
                                                     endAngle={450}
                                                 >
                                                     <Cell fill="#f59e0b" />
-                                                    <Cell fill="#f1f5f9" />
+                                                    <Cell fill="transparent" />
                                                 </Pie>
                                             </PieChart>
                                         </ResponsiveContainer>
