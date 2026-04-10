@@ -24,6 +24,9 @@ class StatsService {
                 unsubscribedCount: 0,
                 spamCount: 0,
                 forwardedCount: 0,
+                reliableOpenedCount: 0,
+                appleMppOpenedCount: 0,
+                replyCount: 0,
             };
 
             stats.forEach(stat => {
@@ -56,6 +59,23 @@ class StatsService {
                     case 'FORWARDED':
                         statsObj.forwardedCount += stat._count.status;
                         break;
+                }
+            });
+
+            // Additionally sync specific counts from the interactions table for accuracy
+            const interactionCounts = await prisma.campaignInteraction.groupBy({
+                by: ['type', 'metadata'],
+                where: { recipient: { campaignId } },
+                _count: { id: true }
+            });
+
+            interactionCounts.forEach(group => {
+                if (group.type === 'OPEN') {
+                    const isMpp = group.metadata?.isMpp;
+                    if (isMpp) statsObj.appleMppOpenedCount += group._count.id;
+                    else statsObj.reliableOpenedCount += group._count.id;
+                } else if (group.type === 'REPLY') {
+                    statsObj.replyCount += group._count.id;
                 }
             });
 
@@ -97,7 +117,7 @@ class StatsService {
      * Records a specific interaction (OPEN or CLICK) and updates stats efficiently.
      * Handles implicit state transitions (e.g., CLICK implies OPEN).
      */
-    async recordInteraction(recipientId, type) {
+    async recordInteraction(recipientId, type, { userAgent = null, ipAddress = null, url = null } = {}) {
         try {
             const recipient = await prisma.campaignRecipient.findUnique({
                 where: { id: recipientId },
@@ -111,31 +131,67 @@ class StatsService {
             let statusChanged = false;
 
             if (type === 'OPEN') {
+                const isMpp = userAgent && (userAgent.includes('AppleNews') || userAgent.includes('Cloudfront')); // Simplified MPP detection
+                
+                await prisma.campaignInteraction.create({
+                    data: {
+                        recipientId,
+                        type: 'OPEN',
+                        userAgent,
+                        ipAddress,
+                        metadata: { isMpp }
+                    }
+                });
+
                 if (!recipient.openedAt) {
                     updates.openedAt = now;
-                    // Only upgrade status to OPENED if it was DELIVERED or SENT
                     if (['SENT', 'DELIVERED'].includes(recipient.status)) {
                         updates.status = 'OPENED';
                         statusChanged = true;
                     }
                 }
             } else if (type === 'CLICK') {
+                await prisma.campaignInteraction.create({
+                    data: {
+                        recipientId,
+                        type: 'CLICK',
+                        url,
+                        userAgent,
+                        ipAddress
+                    }
+                });
+
                 if (!recipient.clickedAt) {
                     updates.clickedAt = now;
                     updates.status = 'CLICKED';
                     statusChanged = true;
-                    // A click also implies an open
                     if (!recipient.openedAt) {
                         updates.openedAt = now;
                     }
                 }
+            } else if (type === 'REPLY') {
+                await prisma.campaignInteraction.create({
+                    data: {
+                        recipientId,
+                        type: 'REPLY',
+                        userAgent,
+                        ipAddress
+                    }
+                });
+                // No specific status for reply in current enum, but we track it in stats
             } else if (type === 'SPAM') {
+                await prisma.campaignInteraction.create({
+                    data: { recipientId, type: 'SPAM', userAgent, ipAddress }
+                });
                 if (!recipient.spamAt) {
                     updates.spamAt = now;
                     updates.status = 'SPAM';
                     statusChanged = true;
                 }
             } else if (type === 'FORWARD') {
+                await prisma.campaignInteraction.create({
+                    data: { recipientId, type: 'FORWARD', userAgent, ipAddress }
+                });
                 if (!recipient.forwardedAt) {
                     updates.forwardedAt = now;
                     updates.status = 'FORWARDED';

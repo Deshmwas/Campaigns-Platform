@@ -1,0 +1,314 @@
+.container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
+}
+
+.loading, .error {
+    text-align: center;
+    padding: 5rem;
+    color: var(--color-gray-500);
+}
+
+.topNav {
+    margin-bottom: var(--spacing-lg);
+}
+
+.breadcrumbs {
+    font-size: 0.75rem;
+    color: #3b82f6;
+    margin-bottom: var(--spacing-sm);
+}
+
+.campaignHeader {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: var(--spacing-md);
+}
+
+.campaignTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.campaignMeta {
+    font-size: 0.8rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.statusDot {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+}
+
+.topActions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+}
+
+.tabs {
+    display: flex;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: var(--spacing-lg);
+    gap: var(--spacing-xl);
+}
+
+.tab {
+    background: none;
+    border: none;
+    padding: var(--spacing-sm) 4px;
+    font-size: 0.875rem;
+    color: #6b7280;
+    cursor: pointer;
+    font-weight: 500;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.tab:hover {
+    color: #3b82f6;
+}
+
+.activeTab {
+    color: #3b82f6;
+}
+
+.activeTab::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #3b82f6;
+}
+
+.metricsBar {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    background: white;
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    border: 1px solid #e5e7eb;
+    margin-bottom: var(--spacing-lg);
+    text-align: center;
+}
+
+.metricItem {
+    border-right: 1px solid #f3f4f6;
+}
+
+.metricItem:last-child {
+    border-right: none;
+}
+
+.metricValue {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.metricLabel {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+.chartsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.cardHeader {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.cardHeader h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.infoIcon {
+    color: #d1d5db;
+    font-size: 1rem;
+    cursor: help;
+}
+
+.donutLayout {
+    display: flex;
+    padding: var(--spacing-lg);
+    align-items: center;
+}
+
+.donutContainer {
+    position: relative;
+    flex: 1;
+}
+
+.donutCenter {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.centerValue {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #111827;
+}
+
+.donutStats {
+    flex: 1.5;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.rateDisplay {
+    display: flex;
+    flex-direction: column;
+}
+
+.rateDisplay span {
+    font-size: 0.75rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.rateDisplay strong {
+    font-size: 1.5rem;
+    color: #111827;
+}
+
+.smallCount {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    font-weight: 400;
+}
+
+.tiny {
+    font-size: 0.65rem;
+    color: #9ca3af;
+    margin-top: 4px;
+}
+
+.splitStats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.splitItem {
+    font-size: 0.75rem;
+    color: #4b5563;
+}
+
+.dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.splitVal {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.splitVal strong {
+    font-size: 0.9rem;
+    color: #111827;
+}
+
+.totalFooter {
+    font-size: 0.75rem;
+    color: #6b7280;
+    border-top: 1px solid #f3f4f6;
+    padding-top: var(--spacing-sm);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cardFooter {
+    padding: 0 var(--spacing-lg) var(--spacing-lg) var(--spacing-lg);
+}
+
+.ctrLine {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #4b5563;
+    margin-bottom: var(--spacing-xs);
+}
+
+.ctrVal {
+    font-weight: 700;
+    color: #111827;
+}
+
+.ctrBar {
+    height: 4px;
+    background: #f3f4f6;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.ctrProgress {
+    height: 100%;
+    background: #8b5cf6;
+}
+
+.timeChartContainer {
+    padding: var(--spacing-lg) 0;
+}
+
+.fullWidth {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 1400px) {
+    .chartsGrid {
+        grid-template-columns: 1fr;
+    }
+    .metricsBar {
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--spacing-md);
+    }
+    .metricItem {
+        border-right: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .metricsBar {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

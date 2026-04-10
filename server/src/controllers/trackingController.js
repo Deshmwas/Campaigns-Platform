@@ -6,7 +6,10 @@ export const trackOpen = async (req, res) => {
         const { recipientId } = req.params;
         console.log(`[Tracking] Email opened by recipient: ${recipientId}`);
 
-        await statsService.recordInteraction(recipientId, 'OPEN');
+        await statsService.recordInteraction(recipientId, 'OPEN', {
+            userAgent: req.headers['user-agent'],
+            ipAddress: req.ip
+        });
 
         // Return a 1x1 transparent pixel
         const pixel = Buffer.from(
@@ -41,7 +44,11 @@ export const trackClick = async (req, res) => {
     try {
         console.log(`[Tracking] User clicked link: ${url} (Recipient: ${recipientId})`);
 
-        await statsService.recordInteraction(recipientId, 'CLICK');
+        await statsService.recordInteraction(recipientId, 'CLICK', {
+            url,
+            userAgent: req.headers['user-agent'],
+            ipAddress: req.ip
+        });
 
         // Always record the specific link click event record for detailed reports
         await prisma.linkClick.create({

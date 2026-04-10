@@ -198,6 +198,7 @@ model CampaignRecipient {
   campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   contact     Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
   clicks      LinkClick[]
+  interactions CampaignInteraction[]
 
   @@unique([campaignId, contactId])
   @@index([campaignId])
@@ -230,11 +231,40 @@ model CampaignStats {
   unsubscribedCount Int    @default(0)
   spamCount       Int      @default(0)
   forwardedCount  Int      @default(0)
+  reliableOpenedCount Int  @default(0)
+  appleMppOpenedCount Int  @default(0)
+  replyCount      Int      @default(0)
   updatedAt       DateTime @updatedAt
 
   campaign        Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
   @@map("campaign_stats")
+}
+
+model CampaignInteraction {
+  id          String   @id @default(uuid())
+  recipientId String
+  type        InteractionType
+  url         String?  // For clicks
+  userAgent   String?  @db.Text
+  ipAddress   String?
+  metadata    Json?    // For extra data like bot detection results
+  timestamp   DateTime @default(now())
+
+  recipient   CampaignRecipient @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId])
+  @@index([type])
+  @@index([timestamp])
+  @@map("campaign_interactions")
+}
+
+enum InteractionType {
+  OPEN
+  CLICK
+  REPLY
+  SPAM
+  FORWARD
 }
 
 model LinkClick {

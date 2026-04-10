@@ -30,7 +30,17 @@ const navItems = [
     { href: '/templates/email', label: 'Email Templates', icon: MdEmail },
     { href: '/templates/sms', label: 'SMS Templates', icon: MdSms },
     { href: '/senders', label: 'Sender Emails', icon: MdAlternateEmail },
-    { href: '/reports', label: 'Reports', icon: MdBarChart },
+    { 
+        href: '/reports', 
+        label: 'Reports', 
+        icon: MdBarChart,
+        children: [
+            { href: '/reports/sent', label: 'Sent Campaigns' },
+            { href: '/reports/sent', label: 'Campaign-based Reports' },
+            { href: '/reports/lists', label: 'List-based Reports' },
+            { href: '/reports/sms', label: 'SMS campaign-based reports' }
+        ]
+    },
     { href: '/settings', label: 'Settings', icon: MdSettings },
 ];
 
@@ -95,18 +105,49 @@ export default function Sidebar() {
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                        const hasChildren = item.children && item.children.length > 0;
 
                         return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`${styles.navItem} ${isActive ? styles.active : ''}`}
-                                onClick={() => setIsOpen(false)}
-                                title={isCollapsed ? item.label : ''}
-                            >
-                                <Icon className={styles.icon} />
-                                {!isCollapsed && <span>{item.label}</span>}
-                            </Link>
+                            <div key={item.href} className={styles.navItemWrapper}>
+                                <Link
+                                    href={item.href}
+                                    className={`${styles.navItem} ${isActive ? styles.active : ''}`}
+                                    onClick={() => setIsOpen(false)}
+                                    title={isCollapsed ? item.label : ''}
+                                >
+                                    <Icon className={styles.icon} />
+                                    {!isCollapsed && <span>{item.label}</span>}
+                                </Link>
+                                
+                                {hasChildren && !isCollapsed && isActive && (
+                                    <div className={styles.subMenu}>
+                                        {item.children.map(child => (
+                                            <Link 
+                                                key={child.href} 
+                                                href={child.href}
+                                                className={`${styles.subNavItem} ${pathname === child.href ? styles.subMenuActive : ''}`}
+                                            >
+                                                {child.label}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {hasChildren && isCollapsed && (
+                                    <div className={styles.floatingMenu}>
+                                        <div className={styles.floatingMenuHeader}>{item.label}</div>
+                                        {item.children.map(child => (
+                                            <Link 
+                                                key={child.href} 
+                                                href={child.href}
+                                                className={styles.floatingMenuItem}
+                                            >
+                                                {child.label}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         );
                     })}
                 </nav>

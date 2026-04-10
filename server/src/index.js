@@ -18,6 +18,7 @@ import organizationRoutes from './routes/organization.js';
 import trackingRoutes from './routes/tracking.js';
 import dashboardRoutes from './routes/dashboard.js';
 import senderRoutes from './routes/senders.js';
+import reportRoutes from './routes/reports.js';
 
 const app = express();
 
@@ -49,6 +50,7 @@ app.use('/api/organization', organizationRoutes);
 app.use('/api/track', trackingRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/senders', senderRoutes);
+app.use('/api/reports', reportRoutes);
 
 // Error handling
 app.use(errorHandler);

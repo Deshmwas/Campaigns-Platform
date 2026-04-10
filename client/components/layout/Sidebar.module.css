@@ -71,6 +71,11 @@
     align-items: center;
 }
 
+.navItemWrapper {
+    position: relative;
+    width: 100%;
+}
+
 .navItem {
     display: flex;
     align-items: center;
@@ -85,23 +90,83 @@
     white-space: nowrap;
 }
 
-.collapsed .navItem {
-    padding: 12px;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
+.subMenu {
+    display: flex;
+    flex-direction: column;
+    padding-left: calc(var(--spacing-lg) + 24px + var(--spacing-md));
+    margin-top: 4px;
+    margin-bottom: 8px;
+    gap: 8px;
+    animation: slideDown 0.3s ease-out;
 }
 
-.navItem:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: white;
-    transform: translateX(4px);
+.subNavItem {
+    color: var(--sidebar-text, #9ca3af);
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    padding: 4px 0;
 }
 
-.navItem.active {
-    background-color: var(--color-primary);
+.subNavItem:hover {
     color: white;
-    box-shadow: 0 4px 12px var(--shadow-glow, rgba(220, 38, 38, 0.3));
+}
+
+.subMenuActive {
+    color: white;
+    font-weight: 600;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.floatingMenu {
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 0;
+    background: var(--color-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
+    box-shadow: 8px 8px 24px rgba(0, 0, 0, 0.5);
+    min-width: 200px;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.navItemWrapper:hover .floatingMenu {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.floatingMenuHeader {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    font-weight: 700;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: var(--spacing-xs);
+}
+
+.floatingMenuItem {
+    display: block;
+    padding: 8px var(--spacing-sm);
+    color: var(--sidebar-text, #9ca3af);
+    text-decoration: none;
+    font-size: 0.875rem;
+    border-radius: var(--radius-sm);
+}
+
+.floatingMenuItem:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
 }
 
 .icon {
