@@ -12,8 +12,8 @@ import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip
 } from 'recharts';
 import { 
-    MdKeyboardArrowLeft, MdKeyboardArrowDown, 
-    MdFilterList, MdMoreVert, MdInfoOutline 
+    MdFilterList, MdMoreVert, MdInfoOutline, MdSearch,
+    MdFileDownload, MdFormatListBulleted
 } from 'react-icons/md';
 
 const COLORS = {
@@ -28,10 +28,19 @@ export default function CampaignDetailReport() {
     const [report, setReport] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('summary');
+    const [recipients, setRecipients] = useState([]);
+    const [recPagination, setRecPagination] = useState({ page: 1, totalPages: 1 });
+    const [loadingRecipients, setLoadingRecipients] = useState(false);
 
     useEffect(() => {
         loadReport();
     }, [id]);
+
+    useEffect(() => {
+        if (activeTab === 'recipients') {
+            loadRecipients(1);
+        }
+    }, [activeTab, id]);
 
     const loadReport = async () => {
         try {
@@ -46,6 +55,24 @@ export default function CampaignDetailReport() {
             console.error('Failed to load detailed report:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadRecipients = async (page = 1) => {
+        setLoadingRecipients(true);
+        try {
+            const response = await fetch(`${api.baseUrl}/api/reports/campaign/${id}/recipients?page=${page}`, {
+                headers: {
+                    'Authorization': `Bearer ${api.getToken()}`
+                }
+            });
+            const data = await response.json();
+            setRecipients(data.recipients || []);
+            setRecPagination(data.pagination || { page: 1, totalPages: 1 });
+        } catch (error) {
+            console.error('Failed to load recipients:', error);
+        } finally {
+            setLoadingRecipients(false);
         }
     };
 
@@ -85,8 +112,18 @@ export default function CampaignDetailReport() {
                     >
                         Report Summary
                     </button>
-                    <button className={styles.tab}>Recipient Activities</button>
-                    <button className={styles.tab}>Click Activities <MdKeyboardArrowDown /></button>
+                    <button 
+                        className={`${styles.tab} ${activeTab === 'recipients' ? styles.activeTab : ''}`}
+                        onClick={() => setActiveTab('recipients')}
+                    >
+                        Recipient Activities
+                    </button>
+                    <button 
+                        className={`${styles.tab} ${activeTab === 'clicks' ? styles.activeTab : ''}`}
+                        onClick={() => setActiveTab('clicks')}
+                    >
+                        Click Activities <MdKeyboardArrowDown />
+                    </button>
                     <button className={styles.tab}>Bounces and Auto-replies</button>
                     <button className={styles.tab}><MdMoreVert /></button>
                 </div>
@@ -127,191 +164,256 @@ export default function CampaignDetailReport() {
                     </div>
                 </div>
 
-                {/* Charts Grid */}
-                <div className={styles.chartsGrid}>
-                    {/* Opens Stats */}
-                    <Card className={styles.chartCard} noPadding>
-                        <div className={styles.cardHeader}>
-                            <h3>Opens Stats <MdInfoOutline className={styles.infoIcon} /></h3>
-                        </div>
-                        <div className={styles.donutLayout}>
-                            <div className={styles.donutContainer}>
-                                <ResponsiveContainer width="100%" height={150}>
-                                    <PieChart>
-                                        <Pie
-                                            data={charts.engagement}
-                                            innerRadius={50}
-                                            outerRadius={70}
-                                            paddingAngle={0}
-                                            dataKey="value"
-                                            startAngle={90}
-                                            endAngle={450}
-                                        >
-                                            <Cell fill="#10b981" />
-                                            <Cell fill="#f3f4f6" />
-                                        </Pie>
-                                    </PieChart>
-                                </ResponsiveContainer>
-                                <div className={styles.donutCenter}>
-                                    <div className={styles.centerValue}>{((metrics.opened/metrics.delivered)*100).toFixed(1)}%</div>
+                {activeTab === 'summary' && (
+                    <>
+                        {/* Charts Grid */}
+                        <div className={styles.chartsGrid}>
+                            {/* Opens Stats */}
+                            <Card className={styles.chartCard} noPadding>
+                                <div className={styles.cardHeader}>
+                                    <h3>Opens Stats <MdInfoOutline className={styles.infoIcon} /></h3>
                                 </div>
-                            </div>
-                            <div className={styles.donutStats}>
-                                <div className={styles.rateDisplay}>
-                                    <span>Opens rate <MdInfoOutline /></span>
-                                    <strong>{((metrics.opened/metrics.delivered)*100).toFixed(1)}% <span className={styles.smallCount}>{metrics.opened}</span></strong>
-                                    <p className={styles.tiny}>Including bots, the open rate would be {(((metrics.opened + 20)/metrics.delivered)*100).toFixed(1)}%</p>
-                                </div>
-                                <div className={styles.splitStats}>
-                                    <div className={styles.splitItem}>
-                                        <span className={styles.dot} style={{backgroundColor: '#10b981'}}></span>
-                                        <span>Reliable opens <MdInfoOutline /></span>
-                                        <div className={styles.splitVal}><strong>{metrics.reliableOpens}</strong> <span>{((metrics.reliableOpens/metrics.opened)*100 || 0).toFixed(1)}%</span></div>
+                                <div className={styles.donutLayout}>
+                                    <div className={styles.donutContainer}>
+                                        <ResponsiveContainer width="100%" height={180}>
+                                            <PieChart>
+                                                <Pie
+                                                    data={charts.engagement}
+                                                    innerRadius={60}
+                                                    outerRadius={80}
+                                                    stroke="none"
+                                                    dataKey="value"
+                                                    startAngle={90}
+                                                    endAngle={450}
+                                                >
+                                                    <Cell fill="#10b981" />
+                                                    <Cell fill="#f1f5f9" />
+                                                </Pie>
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                        <div className={styles.donutCenter}>
+                                            <div className={styles.centerValue}>{((metrics.opened/metrics.delivered)*100 || 0).toFixed(1)}%</div>
+                                        </div>
                                     </div>
-                                    <div className={styles.splitItem}>
-                                        <span className={styles.dot} style={{backgroundColor: '#3b82f6'}}></span>
-                                        <span>Apple MPP opens <MdInfoOutline /></span>
-                                        <div className={styles.splitVal}><strong>{metrics.mppOpens}</strong> <span>{((metrics.mppOpens/metrics.opened)*100 || 0).toFixed(1)}%</span></div>
+                                    <div className={styles.donutStats}>
+                                        <div className={styles.rateDisplay}>
+                                            <span>Opens rate <MdInfoOutline /></span>
+                                            <strong>{((metrics.opened/metrics.delivered)*100 || 0).toFixed(1)}% <span className={styles.smallCount}>{metrics.opened}</span></strong>
+                                            <p className={styles.tiny}>Including bots, the open rate would be {(((metrics.opened + 20)/metrics.delivered)*100 || 0).toFixed(1)}%</p>
+                                        </div>
+                                        <div className={styles.splitStats}>
+                                            <div className={styles.splitItem}>
+                                                <span className={styles.dot} style={{backgroundColor: '#10b981'}}></span>
+                                                <span>Reliable opens <MdInfoOutline /></span>
+                                                <div className={styles.splitVal}><strong>{metrics.reliableOpens}</strong> <span>{((metrics.reliableOpens/metrics.opened)*100 || 0).toFixed(1)}%</span></div>
+                                            </div>
+                                            <div className={styles.splitItem}>
+                                                <span className={styles.dot} style={{backgroundColor: '#3b82f6'}}></span>
+                                                <span>Apple MPP opens <MdInfoOutline /></span>
+                                                <div className={styles.splitVal}><strong>{metrics.mppOpens}</strong> <span>{((metrics.mppOpens/metrics.opened)*100 || 0).toFixed(1)}%</span></div>
+                                            </div>
+                                        </div>
+                                        <div className={styles.totalFooter}>Total opens <MdInfoOutline /> {metrics.opened}</div>
                                     </div>
                                 </div>
-                                <div className={styles.totalFooter}>Total opens <MdInfoOutline /> {metrics.opened}</div>
-                            </div>
-                        </div>
-                    </Card>
+                            </Card>
 
-                    {/* Clicks Stats */}
-                    <Card className={styles.chartCard} noPadding>
-                        <div className={styles.cardHeader}>
-                            <h3>Clicks Stats <MdInfoOutline className={styles.infoIcon} /></h3>
-                        </div>
-                        <div className={styles.donutLayout}>
-                            <div className={styles.donutContainer}>
-                                <ResponsiveContainer width="100%" height={150}>
-                                    <PieChart>
-                                        <Pie
-                                            data={charts.clicks}
-                                            innerRadius={50}
-                                            outerRadius={70}
-                                            paddingAngle={0}
-                                            dataKey="value"
-                                            startAngle={90}
-                                            endAngle={450}
-                                        >
-                                            <Cell fill="#3b82f6" />
-                                            <Cell fill="#f3f4f6" />
-                                        </Pie>
-                                    </PieChart>
-                                </ResponsiveContainer>
-                                <div className={styles.donutCenter}>
-                                    <div className={styles.centerValue}>{((metrics.clicked/metrics.delivered)*100).toFixed(1)}%</div>
+                            {/* Clicks Stats */}
+                            <Card className={styles.chartCard} noPadding>
+                                <div className={styles.cardHeader}>
+                                    <h3>Clicks Stats <MdInfoOutline className={styles.infoIcon} /></h3>
                                 </div>
-                            </div>
-                            <div className={styles.donutStats}>
-                                <div className={styles.rateDisplay}>
-                                    <span>Clicks rate <MdInfoOutline /></span>
-                                    <strong>{((metrics.clicked/metrics.delivered)*100).toFixed(1)}% <span className={styles.smallCount}>{metrics.clicked}</span></strong>
-                                    <p className={styles.tiny}>Including bots, the click rate would be {(((metrics.clicked + 5)/metrics.delivered)*100).toFixed(1)}%</p>
-                                </div>
-                                <div className={styles.splitStats}>
-                                    <div className={styles.splitItem}>
-                                        <span className={styles.dot} style={{backgroundColor: '#10b981'}}></span>
-                                        <span>Reliable clicks <MdInfoOutline /></span>
-                                        <div className={styles.splitVal}><strong>{metrics.clicked}</strong> <span>100%</span></div>
+                                <div className={styles.donutLayout}>
+                                    <div className={styles.donutContainer}>
+                                        <ResponsiveContainer width="100%" height={180}>
+                                            <PieChart>
+                                                <Pie
+                                                    data={charts.clicks}
+                                                    innerRadius={60}
+                                                    outerRadius={80}
+                                                    stroke="none"
+                                                    dataKey="value"
+                                                    startAngle={90}
+                                                    endAngle={450}
+                                                >
+                                                    <Cell fill="#3b82f6" />
+                                                    <Cell fill="#f1f5f9" />
+                                                </Pie>
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                        <div className={styles.donutCenter}>
+                                            <div className={styles.centerValue}>{((metrics.clicked/metrics.delivered)*100 || 0).toFixed(1)}%</div>
+                                        </div>
+                                    </div>
+                                    <div className={styles.donutStats}>
+                                        <div className={styles.rateDisplay}>
+                                            <span>Clicks rate <MdInfoOutline /></span>
+                                            <strong>{((metrics.clicked/metrics.delivered)*100 || 0).toFixed(1)}% <span className={styles.smallCount}>{metrics.clicked}</span></strong>
+                                            <p className={styles.tiny}>Including bots, the click rate would be {(((metrics.clicked + 5)/metrics.delivered)*100 || 0).toFixed(1)}%</p>
+                                        </div>
+                                        <div className={styles.splitStats}>
+                                            <div className={styles.splitItem}>
+                                                <span className={styles.dot} style={{backgroundColor: '#3b82f6'}}></span>
+                                                <span>Reliable clicks <MdInfoOutline /></span>
+                                                <div className={styles.splitVal}><strong>{metrics.clicked}</strong> <span>100%</span></div>
+                                            </div>
+                                        </div>
+                                        <div className={styles.totalFooter}>Total clicks <MdInfoOutline /> {metrics.clicked}</div>
                                     </div>
                                 </div>
-                                <div className={styles.totalFooter}>Total clicks <MdInfoOutline /> {metrics.clicked}</div>
-                            </div>
-                        </div>
-                        <div className={styles.cardFooter}>
-                            <div className={styles.ctrLine}>
-                                <span>Click-through rate <MdInfoOutline /></span>
-                                <span className={styles.ctrVal}>{((metrics.clicked/metrics.opened)*100 || 0).toFixed(1)}%</span>
-                            </div>
-                            <div className={styles.ctrBar}><div className={styles.ctrProgress} style={{width: `${(metrics.clicked/metrics.opened)*100}%`}}></div></div>
-                        </div>
-                    </Card>
+                                <div className={styles.cardFooter}>
+                                    <div className={styles.ctrLine}>
+                                        <span>Click-through rate <MdInfoOutline /></span>
+                                        <span className={styles.ctrVal}>{((metrics.clicked/metrics.opened)*100 || 0).toFixed(1)}%</span>
+                                    </div>
+                                    <div className={styles.ctrBar}><div className={styles.ctrProgress} style={{width: `${(metrics.clicked/metrics.opened)*100 || 0}%`}}></div></div>
+                                </div>
+                            </Card>
 
-                    {/* Reply Stats */}
-                    <Card className={styles.chartCard} noPadding>
-                        <div className={styles.cardHeader}>
-                            <h3>Reply Stats <MdInfoOutline className={styles.infoIcon} /></h3>
-                        </div>
-                        <div className={styles.donutLayout}>
-                            <div className={styles.donutContainer}>
-                                <ResponsiveContainer width="100%" height={150}>
-                                    <PieChart>
-                                        <Pie
-                                            data={[{value: metrics.replies}, {value: metrics.delivered - metrics.replies}]}
-                                            innerRadius={50}
-                                            outerRadius={70}
-                                            paddingAngle={0}
-                                            dataKey="value"
-                                            startAngle={90}
-                                            endAngle={450}
-                                        >
-                                            <Cell fill="#f59e0b" />
-                                            <Cell fill="#f3f4f6" />
-                                        </Pie>
-                                    </PieChart>
-                                </ResponsiveContainer>
-                                <div className={styles.donutCenter}>
-                                    <div className={styles.centerValue}>{((metrics.replies/metrics.delivered)*100).toFixed(1)}%</div>
+                            {/* Reply Stats */}
+                            <Card className={styles.chartCard} noPadding>
+                                <div className={styles.cardHeader}>
+                                    <h3>Reply Stats <MdInfoOutline className={styles.infoIcon} /></h3>
                                 </div>
-                            </div>
-                            <div className={styles.donutStats}>
-                                <div className={styles.rateDisplay}>
-                                    <span>Replies rate <MdInfoOutline /></span>
-                                    <strong>{((metrics.replies/metrics.delivered)*100).toFixed(1)}% <span className={styles.smallCount}>{metrics.replies}</span></strong>
-                                </div>
-                                <div className={styles.splitStats}>
-                                    <div className={styles.splitItem}>
-                                        <span className={styles.dot} style={{backgroundColor: '#f59e0b'}}></span>
-                                        <span>Auto reply <MdInfoOutline /></span>
-                                        <div className={styles.splitVal}><strong>{metrics.replies}</strong> <span>{((metrics.replies/metrics.delivered)*100).toFixed(1)}%</span></div>
+                                <div className={styles.donutLayout}>
+                                    <div className={styles.donutContainer}>
+                                        <ResponsiveContainer width="100%" height={180}>
+                                            <PieChart>
+                                                <Pie
+                                                    data={[{value: metrics.replies}, {value: Math.max(0, metrics.delivered - metrics.replies)}]}
+                                                    innerRadius={60}
+                                                    outerRadius={80}
+                                                    stroke="none"
+                                                    dataKey="value"
+                                                    startAngle={90}
+                                                    endAngle={450}
+                                                >
+                                                    <Cell fill="#f59e0b" />
+                                                    <Cell fill="#f1f5f9" />
+                                                </Pie>
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                        <div className={styles.donutCenter}>
+                                            <div className={styles.centerValue}>{((metrics.replies/metrics.delivered)*100 || 0).toFixed(1)}%</div>
+                                        </div>
+                                    </div>
+                                    <div className={styles.donutStats}>
+                                        <div className={styles.rateDisplay}>
+                                            <span>Replies rate <MdInfoOutline /></span>
+                                            <strong>{((metrics.replies/metrics.delivered)*100 || 0).toFixed(1)}% <span className={styles.smallCount}>{metrics.replies}</span></strong>
+                                        </div>
+                                        <div className={styles.splitStats}>
+                                            <div className={styles.splitItem}>
+                                                <span className={styles.dot} style={{backgroundColor: '#f59e0b'}}></span>
+                                                <span>Auto reply <MdInfoOutline /></span>
+                                                <div className={styles.splitVal}><strong>{metrics.replies}</strong> <span>{((metrics.replies/metrics.delivered)*100 || 0).toFixed(1)}%</span></div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                            </Card>
+                        </div>
+
+                        {/* Opens by Time Chart */}
+                        <Card title="Opens by Time" className={styles.fullWidth}>
+                            <div className={styles.timeChartContainer}>
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <AreaChart data={charts.timeSeries}>
+                                        <defs>
+                                            <linearGradient id="colorOpens" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.1} />
+                                                <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                                        <XAxis 
+                                            dataKey="timestamp" 
+                                            axisLine={false} 
+                                            tickLine={false} 
+                                            tick={{ fill: '#9ca3af', fontSize: 10 }}
+                                            tickFormatter={(val) => new Date(val).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        />
+                                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 10 }} />
+                                        <RechartsTooltip 
+                                            labelFormatter={(val) => new Date(val).toLocaleString()}
+                                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                                        />
+                                        <Area 
+                                            type="monotone" 
+                                            dataKey="opens" 
+                                            stroke="#10b981" 
+                                            strokeWidth={2}
+                                            fillOpacity={1} 
+                                            fill="url(#colorOpens)" 
+                                            name="Opens" 
+                                        />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </Card>
+                    </>
+                )}
+
+                {activeTab === 'recipients' && (
+                    <Card noPadding>
+                        <div className={styles.tableToolbar}>
+                            <MdSearch className={styles.searchIcon} />
+                            <input type="text" placeholder="Search recipients..." className={styles.tableSearch} />
+                            <MdFilterList className={styles.filterIcon} />
+                            <div className={styles.tableActions}>
+                                <MdFileDownload />
+                                <MdFormatListBulleted />
                             </div>
                         </div>
+                        <div className={styles.tableContainer}>
+                            <table className={styles.table}>
+                                <thead>
+                                    <tr>
+                                        <th>Contact Email</th>
+                                        <th>First Name</th>
+                                        <th>Last Name</th>
+                                        <th>Company Name</th>
+                                        <th>Phone</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {loadingRecipients ? (
+                                        <tr><td colSpan="5" className={styles.tableLoading}>Loading recipients...</td></tr>
+                                    ) : recipients.length === 0 ? (
+                                        <tr><td colSpan="5" className={styles.tableEmpty}>No records found</td></tr>
+                                    ) : (
+                                        recipients.map(r => (
+                                            <tr key={r.id}>
+                                                <td className={styles.emailCell}>{r.contact.email}</td>
+                                                <td>{r.contact.firstName || '-'}</td>
+                                                <td>{r.contact.lastName || '-'}</td>
+                                                <td>{r.contact.companyName}</td>
+                                                <td>{r.contact.phone || '-'}</td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                        {recPagination.totalPages > 1 && (
+                            <div className={styles.pagination}>
+                                <button 
+                                    disabled={recPagination.page === 1}
+                                    onClick={() => loadRecipients(recPagination.page - 1)}
+                                >
+                                    Previous
+                                </button>
+                                <span>Page {recPagination.page} of {recPagination.totalPages}</span>
+                                <button 
+                                    disabled={recPagination.page === recPagination.totalPages}
+                                    onClick={() => loadRecipients(recPagination.page + 1)}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
                     </Card>
-                </div>
-
-                {/* Opens by Time Chart */}
-                <Card title="Opens by Time" className={styles.fullWidth}>
-                    <div className={styles.timeChartContainer}>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <AreaChart data={charts.timeSeries}>
-                                <defs>
-                                    <linearGradient id="colorOpens" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.1} />
-                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                                <XAxis 
-                                    dataKey="timestamp" 
-                                    axisLine={false} 
-                                    tickLine={false} 
-                                    tick={{ fill: '#9ca3af', fontSize: 10 }}
-                                    tickFormatter={(val) => new Date(val).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 10 }} />
-                                <RechartsTooltip 
-                                    labelFormatter={(val) => new Date(val).toLocaleString()}
-                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                                />
-                                <Area 
-                                    type="monotone" 
-                                    dataKey="opens" 
-                                    stroke="#10b981" 
-                                    strokeWidth={2}
-                                    fillOpacity={1} 
-                                    fill="url(#colorOpens)" 
-                                    name="Opens" 
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </div>
-                </Card>
+                )}
             </div>
         </DashboardLayout>
     );

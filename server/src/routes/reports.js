@@ -8,5 +8,6 @@ router.use(authenticate);
 
 router.get('/campaigns', reportController.getCampaignListStats);
 router.get('/campaign/:id', reportController.getDetailedReport);
+router.get('/campaign/:id/recipients', reportController.getCampaignRecipients);
 
 export default router;

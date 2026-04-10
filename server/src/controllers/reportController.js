@@ -106,6 +106,55 @@ export const getDetailedReport = async (req, res, next) => {
     }
 };
 
+export const getCampaignRecipients = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { page = 1, limit = 20, status } = req.query;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const where = { campaignId: id };
+        if (status) where.status = status;
+
+        const [recipients, total] = await Promise.all([
+            prisma.campaignRecipient.findMany({
+                where,
+                include: { 
+                    contact: true 
+                },
+                orderBy: { createdAt: 'desc' },
+                skip,
+                take: parseInt(limit)
+            }),
+            prisma.campaignRecipient.count({ where })
+        ]);
+
+        res.json({
+            recipients: recipients.map(r => ({
+                id: r.id,
+                status: r.status,
+                sentAt: r.sentAt,
+                openedAt: r.openedAt,
+                clickedAt: r.clickedAt,
+                contact: {
+                    email: r.contact.email,
+                    firstName: r.contact.firstName,
+                    lastName: r.contact.lastName,
+                    phone: r.contact.phone,
+                    companyName: r.contact.customData?.companyName || r.contact.customData?.organization || '-'
+                }
+            })),
+            pagination: {
+                total,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(total / parseInt(limit))
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 function groupInteractionsByHour(interactions) {
     const groups = {};
     interactions.forEach(i => {
