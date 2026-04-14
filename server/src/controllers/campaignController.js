@@ -192,14 +192,25 @@ export const sendCampaign = async (req, res, next) => {
         });
 
         // Build sender config if a sender email is attached
-        const senderConfig = campaign.senderEmail ? {
-            host: campaign.senderEmail.smtpHost,
-            port: campaign.senderEmail.smtpPort,
-            secure: campaign.senderEmail.encryption === 'SSL',
-            auth: { user: campaign.senderEmail.smtpUsername, pass: decrypt(campaign.senderEmail.smtpPassword) },
-            fromName: campaign.senderEmail.name,
-            fromEmail: campaign.senderEmail.email,
-        } : null;
+        const se = campaign.senderEmail;
+        const senderConfig = se ? (
+            se.providerType === 'mailgun'
+                ? {
+                    providerType: 'mailgun',
+                    mailgunApiKey: decrypt(se.mailgunApiKey),
+                    mailgunDomain: se.mailgunDomain,
+                    fromName: se.name,
+                    fromEmail: se.email,
+                  }
+                : {
+                    host: se.smtpHost,
+                    port: se.smtpPort,
+                    secure: se.encryption === 'SSL',
+                    auth: { user: se.smtpUsername, pass: decrypt(se.smtpPassword) },
+                    fromName: se.name,
+                    fromEmail: se.email,
+                  }
+        ) : null;
 
         // Enqueue jobs for each recipient
         for (const recipient of campaign.recipients) {
@@ -268,14 +279,25 @@ export const retryFailedCampaign = async (req, res, next) => {
         }
 
         // Build sender config
-        const senderConfig = campaign.senderEmail ? {
-            host: campaign.senderEmail.smtpHost,
-            port: campaign.senderEmail.smtpPort,
-            secure: campaign.senderEmail.encryption === 'SSL',
-            auth: { user: campaign.senderEmail.smtpUsername, pass: decrypt(campaign.senderEmail.smtpPassword) },
-            fromName: campaign.senderEmail.name,
-            fromEmail: campaign.senderEmail.email,
-        } : null;
+        const se2 = campaign.senderEmail;
+        const senderConfig = se2 ? (
+            se2.providerType === 'mailgun'
+                ? {
+                    providerType: 'mailgun',
+                    mailgunApiKey: decrypt(se2.mailgunApiKey),
+                    mailgunDomain: se2.mailgunDomain,
+                    fromName: se2.name,
+                    fromEmail: se2.email,
+                  }
+                : {
+                    host: se2.smtpHost,
+                    port: se2.smtpPort,
+                    secure: se2.encryption === 'SSL',
+                    auth: { user: se2.smtpUsername, pass: decrypt(se2.smtpPassword) },
+                    fromName: se2.name,
+                    fromEmail: se2.email,
+                  }
+        ) : null;
 
         // Reset failed recipients to PENDING and re-enqueue
         for (const recipient of campaign.recipients) {

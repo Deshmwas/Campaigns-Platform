@@ -28,6 +28,12 @@ export const config = {
     },
   },
 
+  mailgun: {
+    apiKey: process.env.MAILGUN_API_KEY || null,
+    domain: process.env.MAILGUN_DOMAIN || null,
+    region: process.env.MAILGUN_REGION || 'us', // 'us' or 'eu'
+  },
+
   app: {
     url: process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000',
     apiUrl: process.env.API_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5000',

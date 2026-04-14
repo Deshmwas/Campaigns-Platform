@@ -388,11 +388,19 @@ model SenderEmail {
   organizationId String
   name           String   // Display name (e.g. "Marketing Team")
   email          String   // Sender email address
-  smtpHost       String
+  providerType   String   @default("smtp") // "smtp" | "mailgun"
+
+  // SMTP-specific fields (optional for Mailgun senders)
+  smtpHost       String   @default("")
   smtpPort       Int      @default(587)
-  smtpUsername    String
-  smtpPassword   String   // Encrypted in application layer
+  smtpUsername   String   @default("")
+  smtpPassword   String   @default("") // Encrypted in application layer
   encryption     String   @default("TLS") // TLS or SSL
+
+  // Mailgun-specific fields (optional for SMTP senders)
+  mailgunApiKey  String?  // Encrypted API key
+  mailgunDomain  String?  // Mailgun sending domain
+
   isVerified     Boolean  @default(false)
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())

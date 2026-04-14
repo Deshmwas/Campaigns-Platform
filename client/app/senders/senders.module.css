@@ -154,3 +154,53 @@
     .grid { grid-template-columns: 1fr; }
     .formRow { grid-template-columns: 1fr; }
 }
+
+/* ── Mailgun / Provider Toggle ─────────────────────────────────── */
+.providerToggle {
+    display: flex;
+    gap: 8px;
+    background: var(--color-gray-100);
+    padding: 4px;
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-md);
+}
+
+.providerBtn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: var(--radius-md);
+    border: none;
+    background: transparent;
+    color: var(--color-gray-500);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.providerBtnActive {
+    background: white;
+    color: var(--color-gray-900);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.providerBtn:hover:not(.providerBtnActive) {
+    color: var(--color-gray-700);
+    background: rgba(255,255,255,0.5);
+}
+
+.mailgunNote {
+    background: rgba(246, 60, 15, 0.05);
+    border: 1px solid rgba(246, 60, 15, 0.15);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    color: #b93008;
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.4;
+}
+
