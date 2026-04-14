@@ -18,6 +18,9 @@ export default function CampaignReportsPage() {
     const [campaigns, setCampaigns] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
+    const [compareMode, setCompareMode] = useState(false);
+    const [selectedCompareIds, setSelectedCompareIds] = useState([]);
 
     useEffect(() => {
         loadCampaignData();
@@ -44,6 +47,64 @@ export default function CampaignReportsPage() {
         c.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const exportToCSV = () => {
+        if (filteredCampaigns.length === 0) {
+            alert("No reports to export.");
+            return;
+        }
+        
+        const headers = ["Campaign Name", "Type", "Sent Date", "Delivered Rate (%)", "Open Rate (%)", "Click Rate (%)", "Total Sent", "Total Delivered", "Total Opened", "Total Clicked"];
+        const rows = filteredCampaigns.map(c => [
+            `"${c.name}"`, 
+            c.type, 
+            `"${new Date(c.sentAt).toLocaleString()}"`, 
+            c.deliveredRate.toFixed(2), 
+            c.openRate.toFixed(2), 
+            c.clickRate.toFixed(2),
+            c.stats?.sent || 0,
+            c.stats?.delivered || 0,
+            c.stats?.opened || 0,
+            c.stats?.clicked || 0
+        ]);
+        
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `campaign_reports_${new Date().getTime()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const handleCompareClick = () => {
+        if (compareMode) {
+            if (selectedCompareIds.length === 2) {
+                router.push(`/reports/compare?ids=${selectedCompareIds.join(',')}`);
+            } else {
+                setCompareMode(false);
+                setSelectedCompareIds([]);
+            }
+        } else {
+            setCompareMode(true);
+            setSelectedCompareIds([]);
+            setViewMode('list'); // switch to list view for easier selection
+        }
+    };
+
+    const toggleCompareSelect = (e, id) => {
+        e.stopPropagation();
+        if (selectedCompareIds.includes(id)) {
+            setSelectedCompareIds(prev => prev.filter(i => i !== id));
+        } else {
+            if (selectedCompareIds.length >= 2) {
+                alert("You can only compare up to 2 campaigns at a time.");
+                return;
+            }
+            setSelectedCompareIds(prev => [...prev, id]);
+        }
+    };
+
     return (
         <DashboardLayout>
             <div className={styles.container}>
@@ -61,11 +122,29 @@ export default function CampaignReportsPage() {
                     
                     <div className={styles.headerActions}>
                         <div className={styles.viewToggles}>
-                            <button className={styles.viewToggle}><MdFormatListBulleted /></button>
-                            <button className={`${styles.viewToggle} ${styles.active}`}><MdGridView /></button>
+                            <button 
+                                className={`${styles.viewToggle} ${viewMode === 'list' ? styles.active : ''}`}
+                                onClick={() => setViewMode('list')}
+                            >
+                                <MdFormatListBulleted />
+                            </button>
+                            <button 
+                                className={`${styles.viewToggle} ${viewMode === 'grid' ? styles.active : ''}`}
+                                onClick={() => setViewMode('grid')}
+                            >
+                                <MdGridView />
+                            </button>
                         </div>
-                        <Button variant="outline" className={styles.exportBtn}>Export Reports</Button>
-                        <Button variant="primary" className={styles.compareBtn}>Compare Campaigns</Button>
+                        <Button variant="outline" className={styles.exportBtn} onClick={exportToCSV}>
+                            <MdFileDownload /> Export Reports
+                        </Button>
+                        <Button 
+                            variant={compareMode && selectedCompareIds.length === 2 ? "primary" : compareMode ? "outline" : "primary"} 
+                            className={styles.compareBtn} 
+                            onClick={handleCompareClick}
+                        >
+                            <MdCompare /> {compareMode ? (selectedCompareIds.length === 2 ? 'Run Comparison' : `Cancel Compare (${selectedCompareIds.length}/2 selected)`) : 'Compare Campaigns'}
+                        </Button>
                     </div>
                 </div>
 
@@ -112,56 +191,112 @@ export default function CampaignReportsPage() {
                         {loading ? (
                             <div className={styles.loading}>Loading campaign reports...</div>
                         ) : (
-                            <div className={styles.campaignList}>
-                                {filteredCampaigns.map(campaign => (
-                                    <div 
-                                        key={campaign.id} 
-                                        className={styles.campaignRow}
-                                        onClick={() => router.push(`/reports/campaign/${campaign.id}`)}
-                                    >
-                                        <div className={styles.campaignIcon}>
-                                            <div className={styles.envelopeIcon}>
-                                                <MdEmail />
-                                                <span className={styles.atSign}>@</span>
+                            <div className={viewMode === 'list' ? styles.campaignList : styles.campaignGrid}>
+                                {filteredCampaigns.map(campaign => {
+                                    const isSelected = selectedCompareIds.includes(campaign.id);
+                                    
+                                    if (viewMode === 'grid') {
+                                        return (
+                                            <div 
+                                                key={campaign.id} 
+                                                className={styles.campaignGridCard}
+                                                onClick={() => router.push(`/reports/campaign/${campaign.id}`)}
+                                                style={compareMode ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                                            >
+                                                <div className={styles.gridHeader}>
+                                                    <div className={styles.campaignIcon}>
+                                                        <div className={styles.envelopeIcon} style={{ fontSize: '2rem' }}>
+                                                            <MdEmail />
+                                                        </div>
+                                                    </div>
+                                                    <div className={styles.campaignInfo}>
+                                                        <h3 className={styles.campaignName} style={{ fontSize: '1rem', marginBottom: 4 }}>{campaign.name}</h3>
+                                                        <p className={styles.campaignDate} style={{ fontSize: '0.75rem' }}>
+                                                            <span className={styles.statusDot}></span> 
+                                                            {new Date(campaign.sentAt).toLocaleString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className={styles.gridStats}>
+                                                    <div className={styles.statWidget}>
+                                                        <div className={styles.statValue}>{campaign.openRate.toFixed(1)}%</div>
+                                                        <div className={styles.statLabel}>Opened</div>
+                                                    </div>
+                                                    <div className={styles.statWidget}>
+                                                        <div className={styles.statValue}>{campaign.clickRate.toFixed(1)}%</div>
+                                                        <div className={styles.statLabel}>Clicked</div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                        
-                                        <div className={styles.campaignInfo}>
-                                            <h3 className={styles.campaignName}>{campaign.name}</h3>
-                                            <p className={styles.campaignDate}>
-                                                <span className={styles.statusDot}></span> 
-                                                Sent On {new Date(campaign.sentAt).toLocaleString('en-US', { 
-                                                    month: 'short', day: '2-digit', year: 'numeric', 
-                                                    hour: '2-digit', minute: '2-digit', hour12: true 
-                                                })} EAT
-                                            </p>
-                                        </div>
+                                        );
+                                    }
 
-                                        <div className={styles.statsGroup}>
-                                            <div className={styles.statWidget}>
-                                                <div className={styles.statValue}>{campaign.deliveredRate.toFixed(1)}%</div>
-                                                <div className={styles.statLabel}>Delivered</div>
-                                                <div className={styles.progressBar}>
-                                                    <div className={styles.progressFill} style={{ width: `${campaign.deliveredRate}%`, backgroundColor: '#10b981' }}></div>
-                                                </div>
+                                    return (
+                                        <div 
+                                            key={campaign.id} 
+                                            className={styles.campaignRow}
+                                            onClick={() => {
+                                                if (compareMode) {
+                                                    toggleCompareSelect({ stopPropagation: () => {} }, campaign.id);
+                                                } else {
+                                                    router.push(`/reports/campaign/${campaign.id}`);
+                                                }
+                                            }}
+                                            style={isSelected ? { background: 'rgba(59, 130, 246, 0.1)', borderLeft: '4px solid #3b82f6' } : {}}
+                                        >
+                                            <div className={styles.campaignIcon} style={{ display: 'flex', alignItems: 'center' }}>
+                                                {compareMode ? (
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={isSelected} 
+                                                        readOnly 
+                                                        style={{ width: 18, height: 18, cursor: 'pointer' }}
+                                                    />
+                                                ) : (
+                                                    <div className={styles.envelopeIcon}>
+                                                        <MdEmail />
+                                                        <span className={styles.atSign}>@</span>
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div className={styles.statWidget}>
-                                                <div className={styles.statValue}>{campaign.openRate.toFixed(1)}%</div>
-                                                <div className={styles.statLabel}>Opened</div>
-                                                <div className={styles.progressBar}>
-                                                    <div className={styles.progressFill} style={{ width: `${campaign.openRate}%`, backgroundColor: '#10b981' }}></div>
-                                                </div>
+                                            
+                                            <div className={styles.campaignInfo}>
+                                                <h3 className={styles.campaignName}>{campaign.name}</h3>
+                                                <p className={styles.campaignDate}>
+                                                    <span className={styles.statusDot}></span> 
+                                                    Sent On {new Date(campaign.sentAt).toLocaleString('en-US', { 
+                                                        month: 'short', day: '2-digit', year: 'numeric', 
+                                                        hour: '2-digit', minute: '2-digit', hour12: true 
+                                                    })}
+                                                </p>
                                             </div>
-                                            <div className={styles.statWidget}>
-                                                <div className={styles.statValue}>{campaign.clickRate.toFixed(1)}%</div>
-                                                <div className={styles.statLabel}>Clicked</div>
-                                                <div className={styles.progressBar}>
-                                                    <div className={styles.progressFill} style={{ width: `${campaign.clickRate}%`, backgroundColor: '#10b981' }}></div>
+
+                                            <div className={styles.statsGroup}>
+                                                <div className={styles.statWidget}>
+                                                    <div className={styles.statValue}>{campaign.deliveredRate.toFixed(1)}%</div>
+                                                    <div className={styles.statLabel}>Delivered</div>
+                                                    <div className={styles.progressBar}>
+                                                        <div className={styles.progressFill} style={{ width: `${campaign.deliveredRate}%`, backgroundColor: '#10b981' }}></div>
+                                                    </div>
+                                                </div>
+                                                <div className={styles.statWidget}>
+                                                    <div className={styles.statValue}>{campaign.openRate.toFixed(1)}%</div>
+                                                    <div className={styles.statLabel}>Opened</div>
+                                                    <div className={styles.progressBar}>
+                                                        <div className={styles.progressFill} style={{ width: `${campaign.openRate}%`, backgroundColor: '#10b981' }}></div>
+                                                    </div>
+                                                </div>
+                                                <div className={styles.statWidget}>
+                                                    <div className={styles.statValue}>{campaign.clickRate.toFixed(1)}%</div>
+                                                    <div className={styles.statLabel}>Clicked</div>
+                                                    <div className={styles.progressBar}>
+                                                        <div className={styles.progressFill} style={{ width: `${campaign.clickRate}%`, backgroundColor: '#10b981' }}></div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
