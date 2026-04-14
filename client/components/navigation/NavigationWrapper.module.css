@@ -1,0 +1,19 @@
+.topNavLayout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--color-gray-100);
+}
+
+.topNavMain {
+    flex: 1;
+    padding: var(--spacing-2xl);
+    width: 100%;
+    margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+    .topNavMain {
+        padding: var(--spacing-xl) var(--spacing-lg);
+    }
+}

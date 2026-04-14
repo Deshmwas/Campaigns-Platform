@@ -3,6 +3,7 @@
 import { AuthProvider } from '../context/AuthContext';
 import { ThemeProvider } from '../context/ThemeContext';
 import { ToastProvider } from '../context/ToastContext';
+import { LayoutProvider } from '../context/LayoutContext';
 import '../styles/globals.css';
 
 export default function RootLayout({ children }) {
@@ -14,9 +15,11 @@ export default function RootLayout({ children }) {
             </head>
             <body>
                 <AuthProvider>
-                    <ThemeProvider>
-                        <ToastProvider>{children}</ToastProvider>
-                    </ThemeProvider>
+                    <LayoutProvider>
+                        <ThemeProvider>
+                            <ToastProvider>{children}</ToastProvider>
+                        </ThemeProvider>
+                    </LayoutProvider>
                 </AuthProvider>
             </body>
         </html>

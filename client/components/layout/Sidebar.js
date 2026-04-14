@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
+import { useLayoutConfig } from '../../context/LayoutContext';
 import styles from './Sidebar.module.css';
 import {
     MdDashboard,
@@ -21,32 +22,12 @@ import {
     MdAlternateEmail
 } from 'react-icons/md';
 import api from '../../lib/api';
-
-const navItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: MdDashboard },
-    { href: '/contacts', label: 'Contacts', icon: MdContacts },
-    { href: '/lists', label: 'Lists', icon: MdList },
-    { href: '/campaigns', label: 'Campaigns', icon: MdCampaign },
-    { href: '/templates/email', label: 'Email Templates', icon: MdEmail },
-    { href: '/templates/sms', label: 'SMS Templates', icon: MdSms },
-    { href: '/senders', label: 'Sender Emails', icon: MdAlternateEmail },
-    { 
-        href: '/reports', 
-        label: 'Reports', 
-        icon: MdBarChart,
-        children: [
-            { href: '/reports/sent', label: 'Sent Campaigns' },
-            { href: '/reports/sent', label: 'Campaign-based Reports' },
-            { href: '/reports/lists', label: 'List-based Reports' },
-            { href: '/reports/sms', label: 'SMS campaign-based reports' }
-        ]
-    },
-    { href: '/settings', label: 'Settings', icon: MdSettings },
-];
+import { navItems } from '../../lib/navigation/navConfig';
 
 export default function Sidebar() {
     const pathname = usePathname();
     const { user, logout } = useAuth();
+    const { toggleLayout } = useLayoutConfig();
     const [isOpen, setIsOpen] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -162,7 +143,9 @@ export default function Sidebar() {
                                 <div className={styles.userName}>
                                     {user?.firstName} {user?.lastName}
                                 </div>
-                                <div className={styles.userRole}>{user?.role}</div>
+                                <div className={styles.userRole} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }} onClick={toggleLayout} title="Ctrl+B">
+                                    Switch to Top Nav
+                                </div>
                             </div>
                         )}
                     </div>
