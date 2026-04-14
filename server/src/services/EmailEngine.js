@@ -406,7 +406,7 @@ class EmailEngine {
         if (!html) return html;
         const baseUrl = config.app.apiUrl.endsWith('/') ? config.app.apiUrl.slice(0, -1) : config.app.apiUrl;
         return html.replace(
-            /(src|href)=["']\\/([^"']+)["']/gi,
+            /(src|href)=["']\/([^"']+)["']/gi,
             (match, attr, path) => `${attr}="${baseUrl}/${path}"`
         ).replace(
             /(src|href)=["'](images\/|uploads\/)([^"']+)["']/gi,
