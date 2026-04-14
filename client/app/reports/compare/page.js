@@ -7,7 +7,9 @@ import Button from '../../../components/Button';
 import api from '../../../lib/api';
 import styles from './compare.module.css';
 
-export default function CompareCampaignsPage() {
+export const dynamic = 'force-dynamic';
+
+function CompareCampaignsContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const [campaigns, setCampaigns] = useState([]);
@@ -117,5 +119,15 @@ export default function CompareCampaignsPage() {
                 </div>
             </div>
         </DashboardLayout>
+    );
+}
+
+import { Suspense } from 'react';
+
+export default function CompareCampaignsPage() {
+    return (
+        <Suspense fallback={<DashboardLayout><div className={styles.loading}>Loading comparison...</div></DashboardLayout>}>
+            <CompareCampaignsContent />
+        </Suspense>
     );
 }
