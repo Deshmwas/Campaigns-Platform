@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import Card from '../../../components/Card';
 import Button from '../../../components/Button';
@@ -18,11 +18,12 @@ export default function ImportContactsPage() {
     const [selectedList, setSelectedList] = useState('');
     const [result, setResult] = useState(null);
     const [importing, setImporting] = useState(false);
+    const [fullCsvText, setFullCsvText] = useState('');
     const fileRef = useRef();
 
     const FIELDS = ['email', 'firstName', 'lastName', 'phone', 'company'];
 
-    useState(() => {
+    useEffect(() => {
         api.getLists().then(d => setLists(d || [])).catch(() => {});
     }, []);
 
@@ -33,6 +34,7 @@ export default function ImportContactsPage() {
         const reader = new FileReader();
         reader.onload = (ev) => {
             const text = ev.target.result;
+            setFullCsvText(text);
             const lines = text.split('\n').filter(l => l.trim());
             if (lines.length < 2) { alert('CSV must have headers + data'); return; }
             const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
@@ -61,11 +63,7 @@ export default function ImportContactsPage() {
         if (!selectedList) { alert('Please select a target list'); return; }
         setImporting(true); setStep(3);
         try {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('listId', selectedList);
-            formData.append('mapping', JSON.stringify(mapping));
-            const res = await api.importContactsCSV(formData);
+            const res = await api.importContacts(fullCsvText, selectedList);
             setResult(res);
             setStep(4);
         } catch (err) {
