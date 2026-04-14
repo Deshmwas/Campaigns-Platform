@@ -6,7 +6,7 @@ export const getCampaignListStats = async (req, res, next) => {
         const campaigns = await prisma.campaign.findMany({
             where: { organizationId, status: 'SENT' },
             include: { stats: true },
-            orderBy: { sentAt: 'desc' }
+            orderBy: { updatedAt: 'desc' }
         });
 
         const reportData = campaigns.map(c => {
@@ -20,7 +20,7 @@ export const getCampaignListStats = async (req, res, next) => {
                 id: c.id,
                 name: c.name,
                 type: c.type,
-                sentAt: c.sentAt,
+                sentAt: c.sentAt || c.updatedAt || c.createdAt,
                 deliveredRate: sent > 0 ? (delivered / sent) * 100 : 0,
                 openRate: delivered > 0 ? (opened / delivered) * 100 : 0,
                 clickRate: opened > 0 ? (clicked / opened) * 100 : 0,

@@ -105,7 +105,10 @@ class StatsService {
                 const allFailed = statsObj.failedCount === totalRecipients;
                 await prisma.campaign.updateMany({
                     where: { id: campaignId, status: 'SENDING' },
-                    data: { status: allFailed ? 'FAILED' : 'SENT' },
+                    data: { 
+                        status: allFailed ? 'FAILED' : 'SENT',
+                        sentAt: new Date()
+                    },
                 });
             }
         } catch (error) {
