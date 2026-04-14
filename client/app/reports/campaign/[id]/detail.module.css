@@ -344,9 +344,7 @@
     color: #3b82f6;
 }
 
-.pBtn {
-    /* reuse pagination btn style if needed */
-}
+
 .tableToolbar {
     display: flex;
     align-items: center;
