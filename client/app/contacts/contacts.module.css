@@ -213,6 +213,75 @@
     margin-top: var(--spacing-xs);
 }
 
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg) var(--spacing-md);
+    border-top: 1px solid var(--color-gray-200);
+}
+
+.pageInfo {
+    font-size: 0.9rem;
+    color: var(--color-gray-600);
+}
+
+.pageButtons {
+    display: flex;
+    gap: 8px;
+}
+
+.pageBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border: 1px solid var(--color-gray-200);
+    background: var(--color-white);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.pageBtn:hover:not(:disabled) {
+    background: var(--color-gray-100);
+    border-color: var(--color-gray-300);
+}
+
+.pageBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.bulkActions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: rgba(220, 38, 38, 0.05);
+    border-bottom: 1px solid rgba(220, 38, 38, 0.1);
+}
+
+.selectionCount {
+    font-weight: 600;
+    color: var(--color-primary);
+    font-size: 0.9rem;
+}
+
+.checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+}
+
+.checkCol {
+    width: 40px;
+    text-align: center;
+}
+
 @media (max-width: 900px) {
     .header { flex-direction: column; gap: var(--spacing-md); }
     .actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
@@ -227,4 +296,5 @@
     .table td::before { content: attr(data-label); font-weight: 600; color: var(--color-gray-600); margin-right: var(--spacing-md); }
     .actionsCell { justify-content: flex-end; }
     .tableWrapper { overflow: visible; }
+    .checkCol { display: none; }
 }

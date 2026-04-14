@@ -246,6 +246,20 @@ function SelectContactsModal({ contacts, existingIds, onSelect, onClose }) {
         return (c.email || '').toLowerCase().includes(s) || (c.firstName || '').toLowerCase().includes(s);
     });
 
+    const isAllSelected = filtered.length > 0 && filtered.every(c => selected.includes(c.id));
+
+    const toggleSelectAll = () => {
+        if (isAllSelected) {
+            // Unselect visible only
+            const filteredIds = filtered.map(c => c.id);
+            setSelected(prev => prev.filter(id => !filteredIds.includes(id)));
+        } else {
+            // Select visible
+            const filteredIds = filtered.map(c => c.id);
+            setSelected(prev => Array.from(new Set([...prev, ...filteredIds])));
+        }
+    };
+
     return (
         <div className={styles.modal} onClick={onClose}>
             <div className={styles.modalContent} onClick={e => e.stopPropagation()} style={{maxWidth: 600}}>
@@ -254,16 +268,37 @@ function SelectContactsModal({ contacts, existingIds, onSelect, onClose }) {
                     <MdSearch />
                     <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search contacts..." />
                 </div>
-                <div style={{maxHeight: 300, overflowY: 'auto'}}>
+                
+                <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 12}}>
+                    <span style={{fontSize:'0.9rem', color:'var(--color-gray-500)'}}>
+                        {selected.length} contact{selected.length !== 1 ? 's' : ''} selected
+                    </span>
+                    {filtered.length > 0 && (
+                        <button 
+                            type="button" 
+                            onClick={toggleSelectAll}
+                            style={{
+                                background: 'none', border: 'none', color: 'var(--color-primary)', 
+                                fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem'
+                            }}
+                        >
+                            {isAllSelected ? 'Unselect All Visible' : 'Select All Visible'}
+                        </button>
+                    )}
+                </div>
+
+                <div style={{maxHeight: 300, overflowY: 'auto', border: '1px solid var(--color-gray-100)', borderRadius: 8}}>
                     {filtered.length === 0 ? (
                         <p style={{textAlign:'center',color:'var(--color-gray-500)',padding:20}}>No contacts available</p>
                     ) : filtered.map(c => (
-                        <label key={c.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 4px',borderBottom:'1px solid var(--color-gray-100)',cursor:'pointer'}}>
+                        <label key={c.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',borderBottom:'1px solid var(--color-gray-100)',cursor:'pointer'}}>
                             <input type="checkbox" checked={selected.includes(c.id)}
                                 onChange={() => setSelected(prev => prev.includes(c.id) ? prev.filter(x => x !== c.id) : [...prev, c.id])}
-                                style={{accentColor:'var(--color-primary)'}} />
-                            <span style={{fontWeight:500}}>{c.firstName} {c.lastName}</span>
-                            <span style={{color:'var(--color-gray-500)',fontSize:'0.8rem',marginLeft:'auto'}}>{c.email}</span>
+                                style={{accentColor:'var(--color-primary)', width:18, height:18}} />
+                            <div style={{display:'flex', flexDirection:'column'}}>
+                                <span style={{fontWeight:600}}>{c.firstName} {c.lastName}</span>
+                                <span style={{color:'var(--color-gray-500)',fontSize:'0.8rem'}}>{c.email}</span>
+                            </div>
                         </label>
                     ))}
                 </div>

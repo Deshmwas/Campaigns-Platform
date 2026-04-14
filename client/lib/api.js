@@ -135,10 +135,10 @@ class ApiClient {
         });
     }
 
-    async importContacts(csvData, listId) {
+    async importContacts(contacts, listId) {
         return this.request('/api/contacts/import', {
             method: 'POST',
-            body: { csvData, listId },
+            body: { contacts, listId },
         });
     }
 

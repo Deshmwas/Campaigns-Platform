@@ -1,5 +1,4 @@
 import prisma from '../config/database.js';
-import Papa from 'papaparse';
 
 export const getContacts = async (req, res, next) => {
     try {
@@ -131,52 +130,81 @@ export const deleteContact = async (req, res, next) => {
 
 export const importContacts = async (req, res, next) => {
     try {
-        const { csvData, listId } = req.body;
+        const { contacts: contactsData, listId } = req.body;
 
-        if (!csvData) {
-            return res.status(400).json({ error: 'CSV data is required' });
+        if (!contactsData || !Array.isArray(contactsData)) {
+            return res.status(400).json({ error: 'Contacts array is required' });
         }
 
-        const parsed = Papa.parse(csvData, {
-            header: true,
-            skipEmptyLines: true,
-        });
+        let imported = 0;
+        let skipped = 0;
+        let failed = 0;
+        const skippedDetails = [];
+        const failedDetails = [];
 
-        const contacts = [];
-        const errors = [];
-
-        for (let i = 0; i < parsed.data.length; i++) {
-            const row = parsed.data[i];
-
-            if (!row.email && !row.phone) {
-                errors.push({ row: i + 1, error: 'Email or phone required' });
+        for (const data of contactsData) {
+            if (!data.email && !data.phone) {
+                failed++;
+                failedDetails.push({ contact: data, error: 'Email or phone required' });
                 continue;
             }
 
             try {
-                const contact = await prisma.contact.create({
+                // Check if contact already exists in this organization
+                const existing = await prisma.contact.findFirst({
+                    where: {
+                        organizationId: req.organizationId,
+                        OR: [
+                            ...(data.email ? [{ email: data.email }] : []),
+                            ...(data.phone ? [{ phone: data.phone }] : []),
+                        ],
+                    },
+                });
+
+                if (existing) {
+                    skipped++;
+                    skippedDetails.push({ email: data.email || data.phone, reason: 'Already exists' });
+                    
+                    // If listId provided, ensure they are in the list
+                    if (listId) {
+                        const membership = await prisma.listMembership.findFirst({
+                            where: { contactId: existing.id, listId }
+                        });
+                        if (!membership) {
+                            await prisma.listMembership.create({
+                                data: { contactId: existing.id, listId }
+                            });
+                        }
+                    }
+                    continue;
+                }
+
+                await prisma.contact.create({
                     data: {
                         organizationId: req.organizationId,
-                        email: row.email || null,
-                        phone: row.phone || null,
-                        firstName: row.firstName || row.first_name || null,
-                        lastName: row.lastName || row.last_name || null,
-                        customData: row,
+                        email: data.email || null,
+                        phone: data.phone || null,
+                        firstName: data.firstName || null,
+                        lastName: data.lastName || null,
+                        customData: data.company ? { company: data.company } : {},
                         listMemberships: listId ? {
                             create: { listId },
                         } : undefined,
                     },
                 });
-                contacts.push(contact);
+                imported++;
             } catch (error) {
-                errors.push({ row: i + 1, error: error.message });
+                failed++;
+                failedDetails.push({ contact: data, error: error.message });
             }
         }
 
         res.json({
-            imported: contacts.length,
-            failed: errors.length,
-            errors,
+            imported,
+            skipped,
+            failed,
+            skippedDetails,
+            failedDetails,
         });
     } catch (error) {
         next(error);
