@@ -115,9 +115,20 @@ export default function EmailTemplatesPage() {
                             {templates.map((template) => (
                                 <div key={template.id} className={styles.card}>
                                     <div className={styles.thumbnail}>
-                                        <div className={styles.thumbnailPlaceholder}>
-                                            <MdEmail />
-                                        </div>
+                                        {template.htmlContent ? (
+                                            <div className={styles.previewContainer}>
+                                                <iframe
+                                                    srcDoc={template.htmlContent}
+                                                    title={template.name}
+                                                    className={styles.previewIframe}
+                                                    sandbox="allow-popups-to-escape-sandbox"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className={styles.thumbnailPlaceholder}>
+                                                <MdEmail />
+                                            </div>
+                                        )}
                                     </div>
                                     <div className={styles.info}>
                                         <h3 className={styles.name}>{template.name}</h3>
