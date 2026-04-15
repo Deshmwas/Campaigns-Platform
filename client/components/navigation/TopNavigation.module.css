@@ -3,9 +3,9 @@
     justify-content: space-between;
     align-items: center;
     padding: 0 var(--spacing-xl);
-    background-color: white;
+    background-color: var(--color-secondary);
     height: 70px;
-    border-bottom: 1px solid var(--color-gray-200);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     position: sticky;
     top: 0;
     z-index: 50;
@@ -31,12 +31,14 @@
     font-size: 1.25rem;
     flex-shrink: 0;
     overflow: hidden;
+    box-shadow: 0 4px 12px var(--shadow-glow, rgba(220, 38, 38, 0.4));
+    transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
 .title {
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--color-gray-900);
+    color: white;
     margin: 0;
 }
 
@@ -57,7 +59,7 @@
     align-items: center;
     gap: var(--spacing-xs);
     padding: 8px 12px;
-    color: var(--color-gray-600);
+    color: var(--sidebar-text, #9ca3af);
     text-decoration: none;
     font-size: 0.95rem;
     font-weight: 500;
@@ -67,13 +69,13 @@
 }
 
 .navItem:hover {
-    background-color: var(--color-gray-100);
-    color: var(--color-gray-900);
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
 }
 
 .navItem.active {
-    background-color: rgba(59, 130, 246, 0.1);
-    color: var(--color-primary);
+    background-color: rgba(255, 255, 255, 0.05);
+    color: white;
 }
 
 .icon {
@@ -96,7 +98,7 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background-color: var(--color-primary);
+    background-color: var(--color-accent);
     color: white;
     display: flex;
     align-items: center;
@@ -104,6 +106,8 @@
     font-weight: 600;
     font-size: 0.875rem;
     cursor: pointer;
+    border: 2px solid var(--color-secondary, #000);
+    box-shadow: 0 0 0 2px var(--color-accent);
 }
 
 .mobileToggle {
@@ -111,18 +115,18 @@
     background: none;
     border: none;
     font-size: 1.5rem;
-    color: var(--color-gray-600);
+    color: var(--sidebar-text, #9ca3af);
     cursor: pointer;
 }
 
 .toggleLayoutBtn {
     background: none;
-    border: 1px solid var(--color-gray-300);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: var(--radius-md);
     padding: 6px 10px;
     font-size: 0.875rem;
     cursor: pointer;
-    color: var(--color-gray-600);
+    color: var(--sidebar-text, #9ca3af);
     display: flex;
     align-items: center;
     gap: 4px;
@@ -130,7 +134,8 @@
 }
 
 .toggleLayoutBtn:hover {
-    background-color: var(--color-gray-100);
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
 }
 
 .subMenuDropdown {
@@ -138,10 +143,10 @@
     top: 100%;
     left: 0;
     margin-top: 8px;
-    background-color: white;
-    border: 1px solid var(--color-gray-200);
+    background-color: var(--color-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-md);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    box-shadow: 8px 8px 24px rgba(0, 0, 0, 0.5);
     padding: var(--spacing-sm) 0;
     min-width: 200px;
     display: none;
@@ -155,15 +160,15 @@
 
 .subNavItem {
     padding: 10px 16px;
-    color: var(--color-gray-600);
+    color: var(--sidebar-text, #9ca3af);
     text-decoration: none;
     font-size: 0.875rem;
     transition: background-color 0.2s;
 }
 
 .subNavItem:hover {
-    background-color: var(--color-gray-100);
-    color: var(--color-gray-900);
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
 }
 
 /* Mobile responsive */
@@ -174,11 +179,11 @@
         top: 70px;
         left: 0;
         width: 100%;
-        background: white;
+        background: var(--color-secondary);
         flex-direction: column;
         align-items: flex-start;
         padding: var(--spacing-md);
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5);
     }
     
     .nav.navOpen {
