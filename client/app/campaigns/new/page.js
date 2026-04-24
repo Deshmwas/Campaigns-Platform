@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import Card from '../../../components/Card';
@@ -10,7 +10,7 @@ import api from '../../../lib/api';
 import styles from './new.module.css';
 import { MdArrowForward, MdArrowBack, MdSend, MdSchedule, MdPreview } from 'react-icons/md';
 
-export default function NewCampaignPage() {
+function NewCampaignContent() {
     const router = useRouter();
     const [step, setStep] = useState(1);
     const [lists, setLists] = useState([]);
@@ -312,5 +312,13 @@ export default function NewCampaignPage() {
                 )}
             </div>
         </DashboardLayout>
+    );
+}
+
+export default function NewCampaignPage() {
+    return (
+        <Suspense fallback={null}>
+            <NewCampaignContent />
+        </Suspense>
     );
 }

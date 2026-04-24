@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import Card from '../../../components/Card';
 import Button from '../../../components/Button';
@@ -10,7 +11,7 @@ import styles from './sms.module.css';
 import { MdAdd, MdSms, MdEdit, MdDelete, MdContentCopy } from 'react-icons/md';
 import ConfirmModal from '../../../components/ConfirmModal';
 
-export default function SmsTemplatesPage() {
+function SmsTemplatesContent() {
     const router = useRouter();
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -213,5 +214,13 @@ export default function SmsTemplatesPage() {
                 />
             </div>
         </DashboardLayout>
+    );
+}
+
+export default function SmsTemplatesPage() {
+    return (
+        <Suspense fallback={<div className={styles.loading}>Loading...</div>}>
+            <SmsTemplatesContent />
+        </Suspense>
     );
 }

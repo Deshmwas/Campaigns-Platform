@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../../components/layout/DashboardLayout';
 import Card from '../../../components/Card';
@@ -38,7 +38,7 @@ function Toast({ message, type, onDismiss }) {
     );
 }
 
-export default function EmailTemplatesPage() {
+function EmailTemplatesContent() {
     const router = useRouter();
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -207,5 +207,13 @@ export default function EmailTemplatesPage() {
                 )}
             </div>
         </DashboardLayout>
+    );
+}
+
+export default function EmailTemplatesPage() {
+    return (
+        <Suspense fallback={<div className={styles.loading}>Loading...</div>}>
+            <EmailTemplatesContent />
+        </Suspense>
     );
 }
