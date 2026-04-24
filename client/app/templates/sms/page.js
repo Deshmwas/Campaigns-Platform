@@ -8,7 +8,7 @@ import Button from '../../../components/Button';
 import Input from '../../../components/Input';
 import api from '../../../lib/api';
 import styles from './sms.module.css';
-import { MdAdd, MdSms, MdEdit, MdDelete, MdContentCopy, MdArrowBack } from 'react-icons/md';
+import { MdAdd, MdSms, MdEdit, MdDelete, MdContentCopy } from 'react-icons/md';
 import ConfirmModal from '../../../components/ConfirmModal';
 
 function SmsTemplatesContent() {
@@ -19,17 +19,6 @@ function SmsTemplatesContent() {
     const [editing, setEditing] = useState(null);
     const [form, setForm] = useState({ name: '', content: '' });
     const [confirmState, setConfirmState] = useState({ isOpen: false, payload: null });
-    const [isSelecting, setIsSelecting] = useState(false);
-
-    useEffect(() => {
-        const searchParams = new URLSearchParams(window.location.search);
-        setIsSelecting(searchParams.get('source') === 'new_campaign');
-    }, []);
-
-    const handleSelectTemplate = (template) => {
-        const content = encodeURIComponent(template.content || '');
-        router.push(`/campaigns/new?step=3&templateId=${template.id}&content=${content}`);
-    };
 
     useEffect(() => {
         loadTemplates();
@@ -107,16 +96,9 @@ function SmsTemplatesContent() {
                         <h1 className={styles.title}>SMS Templates</h1>
                         <p className={styles.subtitle}>Create and manage your SMS message templates</p>
                     </div>
-                    <div className={styles.headerActions}>
-                        {isSelecting && (
-                            <Button variant="ghost" onClick={() => router.push('/campaigns/new')} style={{ marginRight: '10px' }}>
-                                <MdArrowBack /> Back to Details
-                            </Button>
-                        )}
-                        <Button onClick={() => { setEditing(null); setForm({ name: '', content: '' }); setShowModal(true); }}>
-                            <MdAdd /> Create Template
-                        </Button>
-                    </div>
+                    <Button onClick={() => { setEditing(null); setForm({ name: '', content: '' }); setShowModal(true); }}>
+                        <MdAdd /> Create Template
+                    </Button>
                 </div>
 
                 {loading ? (
@@ -147,23 +129,15 @@ function SmsTemplatesContent() {
                                     <span>{new Date(template.createdAt).toLocaleDateString()}</span>
                                 </div>
                                 <div className={styles.templateActions}>
-                                    {isSelecting ? (
-                                        <Button onClick={() => handleSelectTemplate(template)} style={{ width: '100%' }}>
-                                            Select Template
-                                        </Button>
-                                    ) : (
-                                        <>
-                                            <button onClick={() => handleEdit(template)} className={styles.actionBtn} title="Edit">
-                                                <MdEdit /> Edit
-                                            </button>
-                                            <button onClick={() => handleDuplicate(template)} className={styles.actionBtn} title="Duplicate">
-                                                <MdContentCopy /> Copy
-                                            </button>
-                                            <button onClick={() => confirmDelete(template.id)} className={`${styles.actionBtn} ${styles.deleteBtn}`} title="Delete">
-                                                <MdDelete />
-                                            </button>
-                                        </>
-                                    )}
+                                    <button onClick={() => handleEdit(template)} className={styles.actionBtn} title="Edit">
+                                        <MdEdit /> Edit
+                                    </button>
+                                    <button onClick={() => handleDuplicate(template)} className={styles.actionBtn} title="Duplicate">
+                                        <MdContentCopy /> Copy
+                                    </button>
+                                    <button onClick={() => confirmDelete(template.id)} className={`${styles.actionBtn} ${styles.deleteBtn}`} title="Delete">
+                                        <MdDelete />
+                                    </button>
                                 </div>
                             </div>
                         ))}

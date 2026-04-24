@@ -229,12 +229,6 @@ function BuilderContent() {
                 addToast('Template updated successfully.');
             } else {
                 const res = await api.createEmailTemplate(payload);
-                const source = searchParams.get('source');
-                if (source === 'new_campaign') {
-                    const content = encodeURIComponent(html);
-                    router.replace(`/campaigns/new?step=3&templateId=${res.id}&content=${content}`);
-                    return;
-                }
                 router.replace(`/templates/builder?id=${res.id}`);
                 addToast('Template saved successfully.');
             }

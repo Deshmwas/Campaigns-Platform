@@ -8,7 +8,7 @@ import Button from '../../../components/Button';
 import Input from '../../../components/Input';
 import api from '../../../lib/api';
 import styles from './new.module.css';
-import { MdArrowForward, MdArrowBack, MdSend, MdSchedule, MdPreview } from 'react-icons/md';
+import { MdArrowForward, MdArrowBack, MdSend, MdSchedule, MdPreview, MdEmail, MdSms } from 'react-icons/md';
 
 function NewCampaignContent() {
     const router = useRouter();
@@ -38,43 +38,6 @@ function NewCampaignContent() {
             setSenders(s || []);
         });
     }, []);
-
-    useEffect(() => {
-        // Handle returning from template selection
-        const searchParams = new URLSearchParams(window.location.search);
-        const returnStep = searchParams.get('step');
-        const selectedTemplateId = searchParams.get('templateId');
-        const selectedContent = searchParams.get('content');
-
-        if (returnStep) {
-            const savedData = localStorage.getItem('campaign_draft');
-            if (savedData) {
-                const parsed = JSON.parse(savedData);
-                const selectedSubject = searchParams.get('subject');
-                setFormData(prev => ({
-                    ...prev,
-                    ...parsed,
-                    templateId: selectedTemplateId || prev.templateId,
-                    content: selectedContent ? decodeURIComponent(selectedContent) : prev.content,
-                    subject: (selectedSubject && !parsed.subject) ? decodeURIComponent(selectedSubject) : (parsed.subject || prev.subject)
-                }));
-                setStep(parseInt(returnStep));
-            }
-        }
-    }, []);
-
-    const handleNextFromStep1 = () => {
-        if (!formData.name) {
-            alert('Enter a campaign name');
-            return;
-        }
-        localStorage.setItem('campaign_draft', JSON.stringify(formData));
-        if (formData.type === 'EMAIL') {
-            router.push('/templates/email?source=new_campaign');
-        } else {
-            router.push('/templates/sms?source=new_campaign');
-        }
-    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -174,15 +137,82 @@ function NewCampaignContent() {
                             )}
                             <div className={styles.stepActions}>
                                 <div></div>
-                                <Button onClick={handleNextFromStep1}>
-                                     Next <MdArrowForward />
-                                 </Button>
+                                <Button onClick={() => formData.name ? setStep(2) : alert('Enter a campaign name')}>
+                                    Next <MdArrowForward />
+                                </Button>
                             </div>
                         </div>
                     </Card>
                 )}
 
-                {/* Step 2: Template is now handled via redirection */}
+                {/* Step 2: Template Selection */}
+                {step === 2 && (
+                    <Card>
+                        <div className={styles.stepContent}>
+                            <h2>Choose Template</h2>
+                            {formData.type === 'EMAIL' ? (
+                                <>
+                                    {templates.length === 0 ? (
+                                        <div className={styles.empty}>
+                                            <p>No email templates yet. Create one first!</p>
+                                            <Button variant="ghost" onClick={() => router.push('/templates/builder')}>
+                                                Create Email Template
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <div className={styles.templateGrid}>
+                                            {templates.map(t => (
+                                                <div key={t.id} className={`${styles.templateCard} ${formData.templateId === t.id ? styles.templateActive : ''}`}
+                                                    onClick={() => handleTemplateSelect(t)}>
+                                                    <div className={styles.templatePreview}>
+                                                        {t.htmlContent ? (
+                                                            <iframe
+                                                                srcDoc={t.htmlContent}
+                                                                title={t.name}
+                                                                className={styles.templateIframe}
+                                                                sandbox="allow-popups-to-escape-sandbox"
+                                                            />
+                                                        ) : (
+                                                            <div className={styles.templateThumb}><MdEmail size={28} /></div>
+                                                        )}
+                                                    </div>
+                                                    <span>{t.name}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <>
+                                    {smsTemplates.length === 0 ? (
+                                        <div className={styles.empty}>
+                                            <p>No SMS templates yet. Create one first!</p>
+                                            <Button variant="ghost" onClick={() => router.push('/templates/sms')}>
+                                                Create SMS Template
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <div className={styles.templateGrid}>
+                                            {smsTemplates.map(t => (
+                                                <div key={t.id} className={`${styles.templateCard} ${formData.templateId === t.id ? styles.templateActive : ''}`}
+                                                    onClick={() => handleTemplateSelect(t)}>
+                                                    <div className={styles.templateThumb}><MdSms size={28} /></div>
+                                                    <span>{t.name}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                            <div className={styles.stepActions}>
+                                <Button variant="ghost" onClick={() => setStep(1)}><MdArrowBack /> Back</Button>
+                                <Button onClick={() => formData.templateId ? setStep(3) : alert('Please select a template')}>
+                                    Next <MdArrowForward />
+                                </Button>
+                            </div>
+                        </div>
+                    </Card>
+                )}
 
                 {/* Step 3: Recipients */}
                 {step === 3 && (
@@ -209,10 +239,7 @@ function NewCampaignContent() {
                                 <p className={styles.recipientCount}>📬 {totalContacts} total recipients selected</p>
                             )}
                             <div className={styles.stepActions}>
-                                <Button variant="ghost" onClick={() => {
-                                    if (formData.type === 'EMAIL') router.push('/templates/email?source=new_campaign');
-                                    else router.push('/templates/sms?source=new_campaign');
-                                }}><MdArrowBack /> Back</Button>
+                                <Button variant="ghost" onClick={() => setStep(2)}><MdArrowBack /> Back</Button>
                                 <Button onClick={() => setStep(4)}>Next <MdArrowForward /></Button>
                             </div>
                         </div>
