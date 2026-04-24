@@ -53,7 +53,8 @@ function EmailTemplatesContent() {
 
     const handleSelectTemplate = (template) => {
         const content = encodeURIComponent(template.htmlContent || '');
-        router.push(`/campaigns/new?step=3&templateId=${template.id}&content=${content}`);
+        const subject = encodeURIComponent(template.subject || '');
+        router.push(`/campaigns/new?step=3&templateId=${template.id}&content=${content}&subject=${subject}`);
     };
 
     const handleWriteFromScratch = () => {
@@ -113,9 +114,14 @@ function EmailTemplatesContent() {
                     </div>
                     <div className={styles.headerActions}>
                         {isSelecting && (
-                            <Button variant="ghost" onClick={handleWriteFromScratch} style={{ marginRight: '10px' }}>
-                                ✏️ Write from scratch
-                            </Button>
+                            <>
+                                <Button variant="ghost" onClick={() => router.push('/campaigns/new')} style={{ marginRight: '10px' }}>
+                                    <MdArrowBack /> Back to Details
+                                </Button>
+                                <Button variant="ghost" onClick={handleWriteFromScratch} style={{ marginRight: '10px' }}>
+                                    ✏️ Write from scratch
+                                </Button>
+                            </>
                         )}
                         <Button onClick={() => router.push('/templates/builder')}>
                             <MdAdd /> Create Template

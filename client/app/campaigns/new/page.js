@@ -50,11 +50,13 @@ function NewCampaignContent() {
             const savedData = localStorage.getItem('campaign_draft');
             if (savedData) {
                 const parsed = JSON.parse(savedData);
+                const selectedSubject = searchParams.get('subject');
                 setFormData(prev => ({
                     ...prev,
                     ...parsed,
                     templateId: selectedTemplateId || prev.templateId,
-                    content: selectedContent ? decodeURIComponent(selectedContent) : prev.content
+                    content: selectedContent ? decodeURIComponent(selectedContent) : prev.content,
+                    subject: (selectedSubject && !parsed.subject) ? decodeURIComponent(selectedSubject) : (parsed.subject || prev.subject)
                 }));
                 setStep(parseInt(returnStep));
             }
@@ -207,7 +209,10 @@ function NewCampaignContent() {
                                 <p className={styles.recipientCount}>📬 {totalContacts} total recipients selected</p>
                             )}
                             <div className={styles.stepActions}>
-                                <Button variant="ghost" onClick={() => setStep(1)}><MdArrowBack /> Back</Button>
+                                <Button variant="ghost" onClick={() => {
+                                    if (formData.type === 'EMAIL') router.push('/templates/email?source=new_campaign');
+                                    else router.push('/templates/sms?source=new_campaign');
+                                }}><MdArrowBack /> Back</Button>
                                 <Button onClick={() => setStep(4)}>Next <MdArrowForward /></Button>
                             </div>
                         </div>

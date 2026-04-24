@@ -8,7 +8,7 @@ import Button from '../../../components/Button';
 import Input from '../../../components/Input';
 import api from '../../../lib/api';
 import styles from './sms.module.css';
-import { MdAdd, MdSms, MdEdit, MdDelete, MdContentCopy } from 'react-icons/md';
+import { MdAdd, MdSms, MdEdit, MdDelete, MdContentCopy, MdArrowBack } from 'react-icons/md';
 import ConfirmModal from '../../../components/ConfirmModal';
 
 function SmsTemplatesContent() {
@@ -107,9 +107,16 @@ function SmsTemplatesContent() {
                         <h1 className={styles.title}>SMS Templates</h1>
                         <p className={styles.subtitle}>Create and manage your SMS message templates</p>
                     </div>
-                    <Button onClick={() => { setEditing(null); setForm({ name: '', content: '' }); setShowModal(true); }}>
-                        <MdAdd /> Create Template
-                    </Button>
+                    <div className={styles.headerActions}>
+                        {isSelecting && (
+                            <Button variant="ghost" onClick={() => router.push('/campaigns/new')} style={{ marginRight: '10px' }}>
+                                <MdArrowBack /> Back to Details
+                            </Button>
+                        )}
+                        <Button onClick={() => { setEditing(null); setForm({ name: '', content: '' }); setShowModal(true); }}>
+                            <MdAdd /> Create Template
+                        </Button>
+                    </div>
                 </div>
 
                 {loading ? (
