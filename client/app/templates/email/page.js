@@ -44,6 +44,21 @@ export default function EmailTemplatesPage() {
     const [loading, setLoading] = useState(true);
     const [confirmState, setConfirmState] = useState({ isOpen: false, payload: null });
     const [toast, setToast] = useState(null);
+    const [isSelecting, setIsSelecting] = useState(false);
+
+    useEffect(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        setIsSelecting(searchParams.get('source') === 'new_campaign');
+    }, []);
+
+    const handleSelectTemplate = (template) => {
+        const content = encodeURIComponent(template.htmlContent || '');
+        router.push(`/campaigns/new?step=3&templateId=${template.id}&content=${content}`);
+    };
+
+    const handleWriteFromScratch = () => {
+        router.push('/templates/builder?source=new_campaign');
+    };
 
     const showToast = useCallback((message, type = 'success') => {
         setToast({ message, type, id: Date.now() });
@@ -96,9 +111,16 @@ export default function EmailTemplatesPage() {
                         <h1 className={styles.title}>Email Templates</h1>
                         <p className={styles.subtitle}>Manage your reusable email designs</p>
                     </div>
-                    <Button onClick={() => router.push('/templates/builder')}>
-                        <MdAdd /> Create Template
-                    </Button>
+                    <div className={styles.headerActions}>
+                        {isSelecting && (
+                            <Button variant="ghost" onClick={handleWriteFromScratch} style={{ marginRight: '10px' }}>
+                                ✏️ Write from scratch
+                            </Button>
+                        )}
+                        <Button onClick={() => router.push('/templates/builder')}>
+                            <MdAdd /> Create Template
+                        </Button>
+                    </div>
                 </div>
 
                 <Card>
@@ -136,19 +158,27 @@ export default function EmailTemplatesPage() {
                                         <p className={styles.date}>Created {new Date(template.createdAt).toLocaleDateString()}</p>
                                         
                                         <div className={styles.actions}>
-                                            <Button variant="ghost" size="sm" onClick={() => router.push(`/templates/builder?id=${template.id}`)}>
-                                                <MdEdit /> Edit
-                                            </Button>
-                                            <Button variant="ghost" size="sm" onClick={() => handleDuplicate(template.id)}>
-                                                <MdContentCopy /> Duplicate
-                                            </Button>
-                                            <button 
-                                                className={styles.deleteBtn} 
-                                                onClick={() => confirmDelete(template.id)}
-                                                title="Delete"
-                                            >
-                                                <MdDelete />
-                                            </button>
+                                            {isSelecting ? (
+                                                <Button onClick={() => handleSelectTemplate(template)} style={{ width: '100%' }}>
+                                                    <MdCheckCircle /> Use This Template
+                                                </Button>
+                                            ) : (
+                                                <>
+                                                    <Button variant="ghost" size="sm" onClick={() => router.push(`/templates/builder?id=${template.id}`)}>
+                                                        <MdEdit /> Edit
+                                                    </Button>
+                                                    <Button variant="ghost" size="sm" onClick={() => handleDuplicate(template.id)}>
+                                                        <MdContentCopy /> Duplicate
+                                                    </Button>
+                                                    <button 
+                                                        className={styles.deleteBtn} 
+                                                        onClick={() => confirmDelete(template.id)}
+                                                        title="Delete"
+                                                    >
+                                                        <MdDelete />
+                                                    </button>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

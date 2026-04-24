@@ -95,19 +95,23 @@
     height: 100%;
     overflow: hidden;
     position: relative;
-    background: white;
+    background: #f9fafb;
     display: flex;
     justify-content: center;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .previewIframe {
-    width: 1000px; /* Fixed width to render template */
-    height: 600px; /* Sufficient height for preview */
+    width: 800px; /* Base width for rendering */
+    height: 600px; /* Height for scaling */
     border: none;
-    transform: scale(0.3); /* Scale down (300px) */
+    transform: scale(0.2); /* Scale down significantly */
     transform-origin: top center;
     pointer-events: none;
     user-select: none;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    margin-top: 10px;
 }
 
 .info {

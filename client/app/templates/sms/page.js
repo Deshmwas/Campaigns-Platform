@@ -11,12 +11,24 @@ import { MdAdd, MdSms, MdEdit, MdDelete, MdContentCopy } from 'react-icons/md';
 import ConfirmModal from '../../../components/ConfirmModal';
 
 export default function SmsTemplatesPage() {
+    const router = useRouter();
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState(null);
     const [form, setForm] = useState({ name: '', content: '' });
     const [confirmState, setConfirmState] = useState({ isOpen: false, payload: null });
+    const [isSelecting, setIsSelecting] = useState(false);
+
+    useEffect(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        setIsSelecting(searchParams.get('source') === 'new_campaign');
+    }, []);
+
+    const handleSelectTemplate = (template) => {
+        const content = encodeURIComponent(template.content || '');
+        router.push(`/campaigns/new?step=3&templateId=${template.id}&content=${content}`);
+    };
 
     useEffect(() => {
         loadTemplates();
@@ -127,15 +139,23 @@ export default function SmsTemplatesPage() {
                                     <span>{new Date(template.createdAt).toLocaleDateString()}</span>
                                 </div>
                                 <div className={styles.templateActions}>
-                                    <button onClick={() => handleEdit(template)} className={styles.actionBtn} title="Edit">
-                                        <MdEdit /> Edit
-                                    </button>
-                                    <button onClick={() => handleDuplicate(template)} className={styles.actionBtn} title="Duplicate">
-                                        <MdContentCopy /> Copy
-                                    </button>
-                                    <button onClick={() => confirmDelete(template.id)} className={`${styles.actionBtn} ${styles.deleteBtn}`} title="Delete">
-                                        <MdDelete />
-                                    </button>
+                                    {isSelecting ? (
+                                        <Button onClick={() => handleSelectTemplate(template)} style={{ width: '100%' }}>
+                                            Select Template
+                                        </Button>
+                                    ) : (
+                                        <>
+                                            <button onClick={() => handleEdit(template)} className={styles.actionBtn} title="Edit">
+                                                <MdEdit /> Edit
+                                            </button>
+                                            <button onClick={() => handleDuplicate(template)} className={styles.actionBtn} title="Duplicate">
+                                                <MdContentCopy /> Copy
+                                            </button>
+                                            <button onClick={() => confirmDelete(template.id)} className={`${styles.actionBtn} ${styles.deleteBtn}`} title="Delete">
+                                                <MdDelete />
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         ))}

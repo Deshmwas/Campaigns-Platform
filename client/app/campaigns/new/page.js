@@ -39,6 +39,41 @@ export default function NewCampaignPage() {
         });
     }, []);
 
+    useEffect(() => {
+        // Handle returning from template selection
+        const searchParams = new URLSearchParams(window.location.search);
+        const returnStep = searchParams.get('step');
+        const selectedTemplateId = searchParams.get('templateId');
+        const selectedContent = searchParams.get('content');
+
+        if (returnStep) {
+            const savedData = localStorage.getItem('campaign_draft');
+            if (savedData) {
+                const parsed = JSON.parse(savedData);
+                setFormData(prev => ({
+                    ...prev,
+                    ...parsed,
+                    templateId: selectedTemplateId || prev.templateId,
+                    content: selectedContent ? decodeURIComponent(selectedContent) : prev.content
+                }));
+                setStep(parseInt(returnStep));
+            }
+        }
+    }, []);
+
+    const handleNextFromStep1 = () => {
+        if (!formData.name) {
+            alert('Enter a campaign name');
+            return;
+        }
+        localStorage.setItem('campaign_draft', JSON.stringify(formData));
+        if (formData.type === 'EMAIL') {
+            router.push('/templates/email?source=new_campaign');
+        } else {
+            router.push('/templates/sms?source=new_campaign');
+        }
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
@@ -137,76 +172,15 @@ export default function NewCampaignPage() {
                             )}
                             <div className={styles.stepActions}>
                                 <div></div>
-                                <Button onClick={() => formData.name ? setStep(2) : alert('Enter a campaign name')}>
-                                    Next <MdArrowForward />
-                                </Button>
+                                <Button onClick={handleNextFromStep1}>
+                                     Next <MdArrowForward />
+                                 </Button>
                             </div>
                         </div>
                     </Card>
                 )}
 
-                {/* Step 2: Template */}
-                {step === 2 && (
-                    <Card>
-                        <div className={styles.stepContent}>
-                            <h2>Choose Template</h2>
-                            {formData.type === 'EMAIL' ? (
-                                <>
-                                    <div className={styles.templateGrid}>
-                                        <div className={`${styles.templateCard} ${!formData.templateId ? styles.templateActive : ''}`}
-                                            onClick={() => setFormData({...formData, templateId: ''})}>
-                                            <div className={styles.templateBlank}>✏️</div>
-                                            <span>Write from scratch</span>
-                                        </div>
-                                        {templates.map(t => (
-                                            <div key={t.id} className={`${styles.templateCard} ${formData.templateId === t.id ? styles.templateActive : ''}`}
-                                                onClick={() => handleTemplateSelect(t)}>
-                                                <div className={styles.templateThumb}>📄</div>
-                                                <span>{t.name}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    {!formData.templateId && (
-                                        <div className={styles.formGroup}>
-                                            <label className={styles.label}>Email Content (HTML)</label>
-                                            <textarea name="content" value={formData.content} onChange={handleChange}
-                                                className={styles.textarea} rows={10}
-                                                placeholder={'<h1>Hello {{first_name}}</h1>\n<p>Welcome to our newsletter!</p>'} />
-                                            <p className={styles.hint}>Use merge tags: {'{{first_name}}'}, {'{{last_name}}'}, {'{{email}}'}</p>
-                                        </div>
-                                    )}
-                                </>
-                            ) : (
-                                <>
-                                    <div className={styles.templateGrid}>
-                                        <div className={`${styles.templateCard} ${!formData.templateId ? styles.templateActive : ''}`}
-                                            onClick={() => setFormData({...formData, templateId: '', content: ''})}>
-                                            <div className={styles.templateBlank}>✏️</div>
-                                            <span>Write from scratch</span>
-                                        </div>
-                                        {smsTemplates.map(t => (
-                                            <div key={t.id} className={`${styles.templateCard} ${formData.templateId === t.id ? styles.templateActive : ''}`}
-                                                onClick={() => handleTemplateSelect(t)}>
-                                                <div className={styles.templateThumb}>💬</div>
-                                                <span>{t.name}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className={styles.formGroup}>
-                                        <label className={styles.label}>SMS Message</label>
-                                        <textarea name="content" value={formData.content} onChange={handleChange}
-                                            className={styles.textarea} rows={5} placeholder="Hi {{first_name}}, this is your reminder!" />
-                                        <p className={styles.hint}>Use merge tags: {'{{first_name}}'}, {'{{last_name}}'}, {'{{phone}}'}</p>
-                                    </div>
-                                </>
-                            )}
-                            <div className={styles.stepActions}>
-                                <Button variant="ghost" onClick={() => setStep(1)}><MdArrowBack /> Back</Button>
-                                <Button onClick={() => setStep(3)}>Next <MdArrowForward /></Button>
-                            </div>
-                        </div>
-                    </Card>
-                )}
+                {/* Step 2: Template is now handled via redirection */}
 
                 {/* Step 3: Recipients */}
                 {step === 3 && (
@@ -233,7 +207,7 @@ export default function NewCampaignPage() {
                                 <p className={styles.recipientCount}>📬 {totalContacts} total recipients selected</p>
                             )}
                             <div className={styles.stepActions}>
-                                <Button variant="ghost" onClick={() => setStep(2)}><MdArrowBack /> Back</Button>
+                                <Button variant="ghost" onClick={() => setStep(1)}><MdArrowBack /> Back</Button>
                                 <Button onClick={() => setStep(4)}>Next <MdArrowForward /></Button>
                             </div>
                         </div>
