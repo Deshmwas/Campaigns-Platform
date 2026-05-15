@@ -8,6 +8,7 @@ import Input from '../../components/Input';
 import api from '../../lib/api';
 import styles from './senders.module.css';
 import { MdAdd, MdEmail, MdCheck, MdClose, MdPlayArrow, MdDelete, MdEdit, MdSend, MdCloud } from 'react-icons/md';
+import { SiMailgun } from 'react-icons/si';
 
 const EMPTY_FORM = {
     name: '', email: '',
